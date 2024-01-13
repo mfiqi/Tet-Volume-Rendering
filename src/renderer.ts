@@ -192,7 +192,7 @@ export class Renderer {
     async createAssets() {
         this.triangleMesh = new TriangleMesh(this.device);
         this.material = new Material();
-        await this.material.initialize(this.device, "dist/img/salman.jpg");
+        await this.material.initialize(this.device, "dist/img/ice.jpg");
     }
 
     render = () => {
