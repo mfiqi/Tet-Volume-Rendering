@@ -196,7 +196,7 @@ export class Renderer {
     }
 
     render = () => {
-        this.rotationSpeed += 0.003;
+        this.rotationSpeed += 0.03;
         if (this.rotationSpeed > 2.0 * Math.PI) this.rotationSpeed -= 2.0 * Math.PI;
 
         const projection = mat4.create();
