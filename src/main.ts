@@ -1,7 +1,18 @@
-import { Renderer } from "./renderer";
+import { App } from "./controller/app";
 
 const canvas : HTMLCanvasElement = <HTMLCanvasElement> document.getElementById("gfx-main");
 
-const renderer = new Renderer(canvas);
+const output_label : HTMLElement = <HTMLElement> document.getElementById("compatibility-label");
+if (navigator.gpu) {
+    output_label.innerText = "WebGPU is supported on this browser";
+}
+else {
+    output_label.innerText = "WebGPU is not supported on this browser";
+}
 
-renderer.Initialize();
+const app = new App(canvas);
+
+(async()=>{
+    await app.initialize();
+    app.run();
+})()
