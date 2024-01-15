@@ -23,6 +23,7 @@ export class Renderer {
     // Assets
     cubeMesh: CubeMesh;
     material: Material;
+    objectBuffer: GPUBuffer;
 
     // Depth stencil 
     depthStencilState: GPUDepthStencilState;
@@ -108,7 +109,7 @@ export class Renderer {
     async makePipeline() {
         // Creating uniform buffer
         this.uniformBuffer = this.device.createBuffer({
-            size: (4 * 4) * 3 * 4, // 4x4 Matrix * 3 Matrices * 4 bytes 
+            size: (4 * 4) * 2 * 4, // 4x4 Matrix * 2 Matrices * 4 bytes 
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
 
@@ -129,6 +130,14 @@ export class Renderer {
                     binding: 2,
                     visibility: GPUShaderStage.FRAGMENT,
                     sampler: {}
+                },
+                {
+                    binding: 3,
+                    visibility: GPUShaderStage.VERTEX,
+                    buffer: {
+                        type: "read-only-storage",
+                        hasDynamicOffset: false
+                    }
                 }
             ],
         });
@@ -150,6 +159,12 @@ export class Renderer {
                 {
                     binding: 2,
                     resource: this.material.sampler
+                },
+                {
+                    binding: 3,
+                    resource: {
+                        buffer: this.objectBuffer
+                    }
                 }
             ]
         });
@@ -190,18 +205,26 @@ export class Renderer {
     async createAssets() {
         this.cubeMesh = new CubeMesh(this.device);
         this.material = new Material();
+        // 64 = size of model * 1024 models
+        const modelBufferDescriptor: GPUBufferDescriptor = {
+            size: 64 * 1024,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+        }
+        this.objectBuffer = this.device.createBuffer(modelBufferDescriptor);
+
         await this.material.initialize(this.device, "dist/img/ice.jpg");
     }
 
-    async render(camera: Camera, cubes: Cube[]) {
+    async render(camera: Camera, cubes: Float32Array, cube_count: number) {
 
         const projection = mat4.create();
-        mat4.perspective(projection, this.degreesToRadians(45), 800/600, 0.1, 10);
+        mat4.perspective(projection, this.degreesToRadians(45), 800/600, 0.1, 100);
 
         const view = camera.get_view();
 
-        this.device.queue.writeBuffer(this.uniformBuffer, 64, <ArrayBuffer>view);
-        this.device.queue.writeBuffer(this.uniformBuffer, 128, <ArrayBuffer>projection);
+        this.device.queue.writeBuffer(this.objectBuffer, 0, cubes, 0, cubes.length);
+        this.device.queue.writeBuffer(this.uniformBuffer, 0, <ArrayBuffer>view);
+        this.device.queue.writeBuffer(this.uniformBuffer, 64, <ArrayBuffer>projection);
 
         //command encoder: records draw commands for submission
         const commandEncoder: GPUCommandEncoder = this.device.createCommandEncoder();
@@ -220,20 +243,8 @@ export class Renderer {
         renderpass.setPipeline(this.pipeline);
         renderpass.setVertexBuffer(0, this.cubeMesh.buffer);
         renderpass.setIndexBuffer(this.cubeMesh.indexBuffer, "uint16");
-
-        cubes.forEach(
-            (cube) => {
-                const model = cube.get_model();
-                
-                this.device.queue.writeBuffer(this.uniformBuffer, 0, <ArrayBuffer>model);
-
-                renderpass.setBindGroup(0, this.bindGroup);
-                renderpass.drawIndexed(12*3);
-
-                //mat4.rotate(model, model, this.rotationSpeed, [0, 1, 1]);
-            }
-        );
-
+        renderpass.setBindGroup(0, this.bindGroup);
+        renderpass.drawIndexed(12*3, cube_count);
         //renderpass.draw(24, 1, 0, 0);
         renderpass.end();
 

@@ -44,6 +44,7 @@ export class CubeMesh {
             ]
         );
 
+
         //VERTEX: the buffer can be used as a vertex buffer
         //COPY_DST: data can be copied to the buffer
         const usage: GPUBufferUsageFlags = GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST;

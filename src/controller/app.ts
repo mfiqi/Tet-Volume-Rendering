@@ -53,8 +53,9 @@ export class App {
         );
 
         this.renderer.render(
-            this.scene.get_player(),
-            this.scene.get_cubes()
+            this.scene.get_camera(),
+            this.scene.get_cubes(),
+            this.scene.cube_count
         );
 
         if (running) {

@@ -1,26 +1,53 @@
 import { Cube } from "./cube";
 import { Camera } from "./camera";
 import { vec3 } from "gl-matrix";
+import { mat4 } from "gl-matrix";
 
 export class Scene {
     cubes: Cube[];
     camera: Camera;
+    object_data: Float32Array;
+    cube_count: number;
 
     constructor() {
         this.cubes = [];
-        this.cubes.push(
-            new Cube(
-                [2,0,0],
-                0
-            )
-        ); 
+        // Size of model matrix 16 * 1024 max cubes
+        this.object_data = new Float32Array(16 * 1024);
+        this.cube_count = 0;
+
+        var i: number = 0;
+        for (var y: number = -5; y < 5; y+=2) {
+            this.cubes.push(
+                new Cube(
+                    [2,y,0],
+                    0
+                )
+            );
+
+            var blank_matrix = mat4.create();
+            for (var j: number = 0; j < 16; j++) {
+                this.object_data[16 * i + j] = <number>blank_matrix.at(j);
+            }
+            i++;
+            this.cube_count++;
+        }
+
 
         this.camera = new Camera([-2,0,0.5], 0, 0);
     }
 
     update() {
+        var i: number = 0;
+
         this.cubes.forEach(
-            (cube) => cube.update()
+            (cube) => {
+                cube.update();
+                var model = cube.get_model();
+                for (var j: number = 0; j<16; j++) {
+                    this.object_data[16 * i + j] = <number>model.at(j);
+                }
+                i++;
+            }
         );
 
         this.camera.update();
@@ -53,11 +80,11 @@ export class Scene {
         );
     }
 
-    get_player(): Camera {
+    get_camera(): Camera {
         return this.camera;
     }
 
-    get_cubes(): Cube[] {
-        return this.cubes;
+    get_cubes(): Float32Array {
+        return this.object_data;
     }
 }
