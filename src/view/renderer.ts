@@ -1,9 +1,9 @@
-import { Material } from "./material";
 import shader from "./shaders/shaders.wgsl";
 import { CubeMesh } from "./cubeMesh";
-import {mat4} from "gl-matrix";
-import { Camera } from "../model/camera";
-import { Cube } from "../model/cube";
+import { QuadMesh } from "./quadMesh";
+import { mat4 } from "gl-matrix";
+import { Material } from "./material";
+import { object_types, RenderData } from "../model/definitions";
 
 export class Renderer {
 
@@ -13,25 +13,30 @@ export class Renderer {
     adapter: GPUAdapter;
     device: GPUDevice;
     context: GPUCanvasContext;
-    format: GPUTextureFormat;
+    format : GPUTextureFormat;
 
     // Pipeline objects
     uniformBuffer: GPUBuffer;
-    bindGroup: GPUBindGroup;
+    triangleBindGroup: GPUBindGroup;
+    quadBindGroup: GPUBindGroup;
     pipeline: GPURenderPipeline;
+    bindGroupLayout: GPUBindGroupLayout;
 
-    // Assets
-    cubeMesh: CubeMesh;
-    material: Material;
-    objectBuffer: GPUBuffer;
-
-    // Depth stencil 
+    // Depth Stencil stuff 
     depthStencilState: GPUDepthStencilState;
     depthStencilBuffer: GPUTexture;
     depthStencilView: GPUTextureView;
     depthStencilAttachment: GPURenderPassDepthStencilAttachment;
 
-    constructor(canvas: HTMLCanvasElement) {
+    // Assets
+    triangleMesh: CubeMesh;
+    quadMesh: QuadMesh;
+    triangleMaterial: Material;
+    quadMaterial: Material;
+    objectBuffer: GPUBuffer;
+
+
+    constructor(canvas: HTMLCanvasElement){
         this.canvas = canvas;
     }
 
@@ -41,21 +46,23 @@ export class Renderer {
 
         await this.createAssets();
 
-        await this.makeDepthBufferResource();
+        await this.makeDepthBufferResources();
 
         await this.makePipeline();
+
+        await this.makeBindGroups();
     }
 
     async setupDevice() {
 
         //adapter: wrapper around (physical) GPU.
         //Describes features and limits
-        this.adapter = <GPUAdapter>await navigator.gpu?.requestAdapter();
+        this.adapter = <GPUAdapter> await navigator.gpu?.requestAdapter();
         //device: wrapper around GPU functionality
         //Function calls are made through the device
-        this.device = <GPUDevice>await this.adapter?.requestDevice();
+        this.device = <GPUDevice> await this.adapter?.requestDevice();
         //context: similar to vulkan instance (or OpenGL context)
-        this.context = <GPUCanvasContext>this.canvas.getContext("webgpu");
+        this.context = <GPUCanvasContext> this.canvas.getContext("webgpu");
         this.format = "bgra8unorm";
         this.context.configure({
             device: this.device,
@@ -65,7 +72,7 @@ export class Renderer {
 
     }
 
-    async makeDepthBufferResource() {
+    async makeDepthBufferResources() {
         /* Depth Stencil State */
         this.depthStencilState = {
             format: "depth24plus-stencil8",
@@ -107,14 +114,8 @@ export class Renderer {
     }
 
     async makePipeline() {
-        // Creating uniform buffer
-        this.uniformBuffer = this.device.createBuffer({
-            size: (4 * 4) * 2 * 4, // 4x4 Matrix * 2 Matrices * 4 bytes 
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-        });
-
-        // Declaring that we're going to use a uniform buffer
-        const bindGroupLayout = this.device.createBindGroupLayout({
+        
+        this.bindGroupLayout = this.device.createBindGroupLayout({
             entries: [
                 {
                     binding: 0,
@@ -142,9 +143,63 @@ export class Renderer {
             ],
         });
 
-        // Declare which uniform buffer we're using
-        this.bindGroup = this.device.createBindGroup({
-            layout: bindGroupLayout,
+        const pipelineLayout = this.device.createPipelineLayout({
+            bindGroupLayouts: [this.bindGroupLayout]
+        });
+
+        this.pipeline = this.device.createRenderPipeline({
+            vertex : {
+                module : this.device.createShaderModule({
+                    code : shader
+                }),
+                entryPoint : "vs_main",
+                buffers: [this.triangleMesh.bufferLayout,]
+            },
+    
+            fragment : {
+                module : this.device.createShaderModule({
+                    code : shader
+                }),
+                entryPoint : "fs_main",
+                targets : [{
+                    format : this.format
+                }]
+            },
+    
+            primitive : {
+                topology : "triangle-list"
+            },
+    
+            layout: pipelineLayout,
+            depthStencil: this.depthStencilState,
+        });
+
+    }
+
+    async createAssets() {
+        this.triangleMesh = new CubeMesh(this.device);
+        this.quadMesh = new QuadMesh(this.device);
+        this.triangleMaterial = new Material();
+        this.quadMaterial = new Material();
+
+        this.uniformBuffer = this.device.createBuffer({
+            size: 64 * 2,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+
+        const modelBufferDescriptor: GPUBufferDescriptor = {
+            size: 64 * 1024,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        };
+        this.objectBuffer = this.device.createBuffer(modelBufferDescriptor);
+
+        await this.triangleMaterial.initialize(this.device, "dist/img/ice.jpg");
+        await this.quadMaterial.initialize(this.device, "dist/img/floor.png");
+    }
+
+    async makeBindGroups() {
+        this.triangleBindGroup = this.device.createBindGroup({
+            layout: this.bindGroupLayout,
             entries: [
                 {
                     binding: 0,
@@ -154,11 +209,11 @@ export class Renderer {
                 },
                 {
                     binding: 1,
-                    resource: this.material.view
+                    resource: this.triangleMaterial.view
                 },
                 {
                     binding: 2,
-                    resource: this.material.sampler
+                    resource: this.triangleMaterial.sampler
                 },
                 {
                     binding: 3,
@@ -169,69 +224,61 @@ export class Renderer {
             ]
         });
 
-        const pipelineLayout = this.device.createPipelineLayout({
-            bindGroupLayouts: [bindGroupLayout]
+        // Declare which uniform buffer we're using
+        this.quadBindGroup = this.device.createBindGroup({
+            layout: this.bindGroupLayout,
+            entries: [
+                {
+                    binding: 0,
+                    resource: {
+                        buffer: this.uniformBuffer
+                    }
+                },
+                {
+                    binding: 1,
+                    resource: this.quadMaterial.view
+                },
+                {
+                    binding: 2,
+                    resource: this.quadMaterial.sampler
+                },
+                {
+                    binding: 3,
+                    resource: {
+                        buffer: this.objectBuffer
+                    }
+                }
+            ]
         });
-
-        this.pipeline = this.device.createRenderPipeline({
-            vertex: {
-                module: this.device.createShaderModule({
-                    code: shader
-                }),
-                entryPoint: "vs_main",
-                buffers: [this.cubeMesh.bufferLayout,]
-            },
-
-            fragment: {
-                module: this.device.createShaderModule({
-                    code: shader
-                }),
-                entryPoint: "fs_main",
-                targets: [{
-                    format: this.format
-                }]
-            },
-
-            primitive: {
-                topology: "triangle-list"
-            },
-
-            layout: pipelineLayout,
-            depthStencil:  this.depthStencilState
-        });
-
     }
 
-    async createAssets() {
-        this.cubeMesh = new CubeMesh(this.device);
-        this.material = new Material();
-        // 64 = size of model * 1024 models
-        const modelBufferDescriptor: GPUBufferDescriptor = {
-            size: 64 * 1024,
-            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+    async render(renderables: RenderData) {
+        
+        //Early exit tests
+        if (!this.device || !this.pipeline) {
+            return;
         }
-        this.objectBuffer = this.device.createBuffer(modelBufferDescriptor);
 
-        await this.material.initialize(this.device, "dist/img/ice.jpg");
-    }
-
-    async render(camera: Camera, cubes: Float32Array, cube_count: number) {
-
+        //make transforms
         const projection = mat4.create();
         mat4.perspective(projection, this.degreesToRadians(45), 800/600, 0.1, 100);
 
-        const view = camera.get_view();
+        const view = renderables.view_transform;
 
-        this.device.queue.writeBuffer(this.objectBuffer, 0, cubes, 0, cubes.length);
+        this.device.queue.writeBuffer(
+            this.objectBuffer, 0, 
+            renderables.model_transforms, 0, 
+            renderables.model_transforms.length
+        );
         this.device.queue.writeBuffer(this.uniformBuffer, 0, <ArrayBuffer>view);
         this.device.queue.writeBuffer(this.uniformBuffer, 64, <ArrayBuffer>projection);
 
         //command encoder: records draw commands for submission
-        const commandEncoder: GPUCommandEncoder = this.device.createCommandEncoder();
+        const commandEncoder : GPUCommandEncoder = this.device.createCommandEncoder();
         //texture view: image view to the color buffer in this case
-        const textureView: GPUTextureView = this.context.getCurrentTexture().createView();
+        const textureView : GPUTextureView = this.context.getCurrentTexture().createView();
         //renderpass: holds draw commands, allocated from command encoder
-        const renderpass: GPURenderPassEncoder = commandEncoder.beginRenderPass({
+        const renderpass : GPURenderPassEncoder = commandEncoder.beginRenderPass({
             colorAttachments: [{
                 view: textureView,
                 clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
@@ -240,12 +287,30 @@ export class Renderer {
             }],
             depthStencilAttachment: this.depthStencilAttachment
         });
+
         renderpass.setPipeline(this.pipeline);
-        renderpass.setVertexBuffer(0, this.cubeMesh.buffer);
-        renderpass.setIndexBuffer(this.cubeMesh.indexBuffer, "uint16");
-        renderpass.setBindGroup(0, this.bindGroup);
-        renderpass.drawIndexed(12*3, cube_count);
-        //renderpass.draw(24, 1, 0, 0);
+        var objects_drawn: number = 0;
+
+        //Cubes
+        renderpass.setVertexBuffer(0, this.triangleMesh.buffer);
+        renderpass.setIndexBuffer(this.triangleMesh.indexBuffer, "uint16");
+        renderpass.setBindGroup(0, this.triangleBindGroup);
+        renderpass.drawIndexed(
+            12*3, // vertices per cube
+            renderables.object_counts[object_types.CUBE],
+            0, 0, objects_drawn
+        );
+        objects_drawn += renderables.object_counts[object_types.CUBE];
+
+        //Quads
+        renderpass.setVertexBuffer(0, this.quadMesh.buffer);
+        renderpass.setBindGroup(0, this.quadBindGroup);
+        renderpass.draw(
+            6, renderables.object_counts[object_types.QUAD],
+            0, objects_drawn
+        );
+        objects_drawn += renderables.object_counts[object_types.QUAD];
+
         renderpass.end();
 
         this.device.queue.submit([commandEncoder.finish()]);
