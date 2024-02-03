@@ -1,0 +1,2 @@
+1. Switch back to standard RGB cube instead of a textured one.
+2. 

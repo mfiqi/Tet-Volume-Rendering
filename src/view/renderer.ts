@@ -29,10 +29,10 @@ export class Renderer {
     depthStencilAttachment: GPURenderPassDepthStencilAttachment;
 
     // Assets
-    triangleMesh: CubeMesh;
-    quadMesh: QuadMesh;
-    triangleMaterial: Material;
-    quadMaterial: Material;
+    cubeMesh: CubeMesh;
+    //quadMesh: QuadMesh;
+    //triangleMaterial: Material;
+    //quadMaterial: Material;
     objectBuffer: GPUBuffer;
 
 
@@ -122,7 +122,7 @@ export class Renderer {
                     visibility: GPUShaderStage.VERTEX,
                     buffer: {}
                 },
-                {
+                /*{
                     binding: 1,
                     visibility: GPUShaderStage.FRAGMENT,
                     texture: {}
@@ -131,9 +131,9 @@ export class Renderer {
                     binding: 2,
                     visibility: GPUShaderStage.FRAGMENT,
                     sampler: {}
-                },
+                },*/
                 {
-                    binding: 3,
+                    binding: 1,
                     visibility: GPUShaderStage.VERTEX,
                     buffer: {
                         type: "read-only-storage",
@@ -153,7 +153,7 @@ export class Renderer {
                     code : shader
                 }),
                 entryPoint : "vs_main",
-                buffers: [this.triangleMesh.bufferLayout,]
+                buffers: [this.cubeMesh.bufferLayout,]
             },
     
             fragment : {
@@ -177,10 +177,10 @@ export class Renderer {
     }
 
     async createAssets() {
-        this.triangleMesh = new CubeMesh(this.device);
-        this.quadMesh = new QuadMesh(this.device);
-        this.triangleMaterial = new Material();
-        this.quadMaterial = new Material();
+        this.cubeMesh = new CubeMesh(this.device);
+        //this.quadMesh = new QuadMesh(this.device);
+        //this.triangleMaterial = new Material();
+        //this.quadMaterial = new Material();
 
         this.uniformBuffer = this.device.createBuffer({
             size: 64 * 2,
@@ -193,8 +193,8 @@ export class Renderer {
         };
         this.objectBuffer = this.device.createBuffer(modelBufferDescriptor);
 
-        await this.triangleMaterial.initialize(this.device, "dist/img/ice.jpg");
-        await this.quadMaterial.initialize(this.device, "dist/img/floor.png");
+        //await this.triangleMaterial.initialize(this.device, "dist/img/ice.jpg");
+        //await this.quadMaterial.initialize(this.device, "dist/img/floor.png");
     }
 
     async makeBindGroups() {
@@ -207,16 +207,16 @@ export class Renderer {
                         buffer: this.uniformBuffer
                     }
                 },
-                {
+                /*{
                     binding: 1,
                     resource: this.triangleMaterial.view
                 },
                 {
                     binding: 2,
                     resource: this.triangleMaterial.sampler
-                },
+                },*/
                 {
-                    binding: 3,
+                    binding: 1,
                     resource: {
                         buffer: this.objectBuffer
                     }
@@ -234,16 +234,16 @@ export class Renderer {
                         buffer: this.uniformBuffer
                     }
                 },
-                {
+                /*{
                     binding: 1,
                     resource: this.quadMaterial.view
                 },
                 {
                     binding: 2,
                     resource: this.quadMaterial.sampler
-                },
+                },*/
                 {
-                    binding: 3,
+                    binding: 1,
                     resource: {
                         buffer: this.objectBuffer
                     }
@@ -292,8 +292,8 @@ export class Renderer {
         var objects_drawn: number = 0;
 
         //Cubes
-        renderpass.setVertexBuffer(0, this.triangleMesh.buffer);
-        renderpass.setIndexBuffer(this.triangleMesh.indexBuffer, "uint16");
+        renderpass.setVertexBuffer(0, this.cubeMesh.buffer);
+        renderpass.setIndexBuffer(this.cubeMesh.indexBuffer, "uint16");
         renderpass.setBindGroup(0, this.triangleBindGroup);
         renderpass.drawIndexed(
             12*3, // vertices per cube
@@ -303,13 +303,13 @@ export class Renderer {
         objects_drawn += renderables.object_counts[object_types.CUBE];
 
         //Quads
-        renderpass.setVertexBuffer(0, this.quadMesh.buffer);
+        /*renderpass.setVertexBuffer(0, this.quadMesh.buffer);
         renderpass.setBindGroup(0, this.quadBindGroup);
         renderpass.draw(
             6, renderables.object_counts[object_types.QUAD],
             0, objects_drawn
         );
-        objects_drawn += renderables.object_counts[object_types.QUAD];
+        objects_drawn += renderables.object_counts[object_types.QUAD];*/
 
         renderpass.end();
 
