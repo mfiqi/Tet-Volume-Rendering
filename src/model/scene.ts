@@ -21,10 +21,25 @@ export class Scene {
         this.cube_count = 0;
         this.quad_count = 0;
 
-        this.create_cubes();
-        this.create_quads();
+        this.create_cube();
+        //this.create_cubes();
+        //this.create_quads();
 
         this.camera = new Camera([-2,0,0.5], 0, 0);
+    }
+
+    create_cube() {
+        this.cubes.push(
+            new Cube(
+                [0,0,0],
+                0
+            )
+        );
+        var blank_matrix = mat4.create();
+        for (var i: number = 0; i < 16; i++) {
+            this.object_data[i] = <number>blank_matrix.at(i);
+        }
+        this.cube_count++;
     }
 
     create_cubes() {
