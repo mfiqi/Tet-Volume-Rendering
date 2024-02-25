@@ -55,10 +55,11 @@ export class App {
         this.renderer.render(
             this.scene.get_renderables()
         );
-
-        if (running) {
-            requestAnimationFrame(this.run);
-        }
+        
+        //TODO: Uncomment this line to enable frames
+        //if (running) {
+        //    requestAnimationFrame(this.run);
+        //}
     }
 
     handle_keypress(event: JQuery.KeyDownEvent) {
