@@ -169,7 +169,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (\"@fragment\\r\\nfn fs_main() -> @location(0) vec4<f32>\\r\\n{\\r\\n    return vec4<f32>(1.0,0.5,0.2,0.0);\\r\\n}\");\n\n//# sourceURL=webpack://npm/./src/view/shaders/fragment.wgsl?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (\"struct FragmentInput {\\r\\n    @builtin(position) pixel: vec4<f32>\\r\\n};\\r\\n\\r\\n@fragment\\r\\nfn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>\\r\\n{\\r\\n    var color : vec4<f32>;\\r\\n\\r\\n    color.r = fragmentInput.pixel.x / 800.0;\\r\\n    color.g = fragmentInput.pixel.y / 600.0;\\r\\n    color.b = 0.0;\\r\\n    color.a = 1.0;\\r\\n\\r\\n    return color;\\r\\n}\");\n\n//# sourceURL=webpack://npm/./src/view/shaders/fragment.wgsl?");
 
 /***/ }),
 
@@ -180,7 +180,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (\"@vertex\\r\\nfn vs_main(@builtin(vertex_index) my_index: u32) -> @builtin(position) vec4<f32> \\r\\n{\\r\\n    var pos = array<vec2<f32>, 6>(\\r\\n        vec2(-1.0, -1.0),\\r\\n        vec2(-1.0, 1.0),\\r\\n        vec2(1.0, 1.0),\\r\\n        vec2(1.0, 1.0),\\r\\n        vec2(1.0, -1.0),\\r\\n        vec2(-1.0, -1.0)\\r\\n    );\\r\\n    return vec4<f32>(pos[my_index], 0.0, 1.0);\\r\\n}\");\n\n//# sourceURL=webpack://npm/./src/view/shaders/vertex.wgsl?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (\"struct VertexInput {\\r\\n    @builtin(vertex_index) index: u32\\r\\n};\\r\\n\\r\\nstruct VertexOutput {\\r\\n    @builtin(position) Position : vec4<f32>\\r\\n};\\r\\n\\r\\n@vertex\\r\\nfn vs_main(vertexInput: VertexInput) -> VertexOutput\\r\\n{\\r\\n    var pos = array<vec2<f32>, 6>(\\r\\n        vec2(-1.0, -1.0),\\r\\n        vec2(-1.0, 1.0),\\r\\n        vec2(1.0, 1.0),\\r\\n        vec2(1.0, 1.0),\\r\\n        vec2(1.0, -1.0),\\r\\n        vec2(-1.0, -1.0)\\r\\n    );\\r\\n\\r\\n    var vertexOutput : VertexOutput;\\r\\n\\r\\n    vertexOutput.Position = vec4<f32>(pos[vertexInput.index], 0.0, 1.0);\\r\\n\\r\\n    return vertexOutput;\\r\\n}\");\n\n//# sourceURL=webpack://npm/./src/view/shaders/vertex.wgsl?");
 
 /***/ })
 
