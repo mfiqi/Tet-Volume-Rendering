@@ -26,7 +26,11 @@ fn vs_main(vertexInput: VertexInput) -> VertexOutput
 {
     var vertexOutput : VertexOutput;
 
-    vertexOutput.Position = transformUBO.projection * transformUBO.view * vec4<f32>(vertexInput.aVertexPosition, 1.0);
+    var volume_translation : vec3<f32> = vec3<f32>(0.5,0.5,0.5) - volumeData.volumeScale * 0.5;
+    
+    vertexOutput.Position = transformUBO.projection * transformUBO.view * vec4<f32>(vertexInput.aVertexPosition * volumeData.volumeScale + volume_translation, 1.0);
+	vertexOutput.transformed_eye = (volumeData.eyePosition - volume_translation) / volumeData.volumeScale;
+	vertexOutput.ray_direction = vertexOutput.Position.xyz - vertexOutput.transformed_eye;
     
     return vertexOutput;
 }
