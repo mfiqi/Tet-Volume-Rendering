@@ -40,4 +40,8 @@ export class Camera {
     get_view(): mat4 {
         return this.view;
     }
+
+    get_eye_position() : vec3 {
+        return this.position;
+    }
 }

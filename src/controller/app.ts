@@ -57,9 +57,9 @@ export class App {
         );
         
         //TODO: Uncomment this line to enable frames
-        //if (running) {
-        //    requestAnimationFrame(this.run);
-        //}
+        if (running) {
+            requestAnimationFrame(this.run);
+        }
     }
 
     handle_keypress(event: JQuery.KeyDownEvent) {

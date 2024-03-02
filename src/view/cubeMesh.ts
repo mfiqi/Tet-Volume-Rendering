@@ -9,41 +9,40 @@ export class CubeMesh {
     }
 
     createVertexBuffer(device: GPUDevice) {
-        // x y z r g b
+        // x y z
         const vertices: Float32Array = new Float32Array(
             [
-                0, 0, 1, 1, 0, 0,
-                1, 0, 1, 0, 1, 0,
-                1, 1, 1, 1, 0, 1,
-                0, 1, 1, 0, 1, 0,
+                0, 0, 1,
+                1, 0, 1,
+                1, 1, 1,
+                0, 1, 1,
 
-                0, 0, 0, 0, 1, 1,
-                1, 0, 0, 1, 1, 1,
-                1, 1, 0, 1, 0, 0,
-                0, 1, 0, 1, 0, 1,
+                0, 0, 0,
+                1, 0, 0,
+                1, 1, 0,
+                0, 1, 0,
 
-                0, 1, 1, 0, 0, 1,
-                1, 1, 1, 1, 1, 1,
-                1, 1, 0, 1, 1, 0,
-                0, 1, 0, 1, 0, 0,
+                0, 1, 1,
+                1, 1, 1,
+                1, 1, 0,
+                0, 1, 0,
 
-                0, 0, 1, 0, 1, 1,
-                1, 0, 1, 0, 1, 0,
-                1, 0, 0, 1, 0, 0,
-                0, 0, 0, 0, 1, 1,
+                0, 0, 1,
+                1, 0, 1,
+                1, 0, 0,
+                0, 0, 0,
 
-                1, 0, 1, 0, 1, 1,
-                1, 0, 0, 1, 0, 1,
-                1, 1, 0, 1, 0, 0,
-                1, 1, 1, 1, 1, 0,
+                1, 0, 1,
+                1, 0, 0,
+                1, 1, 0,
+                1, 1, 1,
 
-                0, 0, 1, 0, 1, 1,
-                0, 0, 0, 1, 1, 0,
-                0, 1, 0, 1, 0, 0,
-                0, 1, 1, 1, 0, 1
+                0, 0, 1,
+                0, 0, 0,
+                0, 1, 0,
+                0, 1, 1
             ]
         );
-
 
         //VERTEX: the buffer can be used as a vertex buffer
         //COPY_DST: data can be copied to the buffer
@@ -63,19 +62,13 @@ export class CubeMesh {
 
         //Defines buffer layout
         this.bufferLayout = {
-            arrayStride: 24, // to get to next element in array, step through 6 ints, int = 4 bytes, 6 ints = 20 bytes
+            arrayStride: 12, // to get to next element in array, step through 6 ints, int = 4 bytes, 6 ints = 20 bytes
             attributes: [
                 // Position
                 {
                     shaderLocation: 0,
                     format: "float32x3",
                     offset: 0
-                },
-                // Color
-                {
-                    shaderLocation: 1,
-                    format: "float32x3",
-                    offset: 12 // this is 12 because the first number starts to color starts two elements in the buffer, 3 * 4 bytes = 12 bytes
                 }
             ]
         }

@@ -1,6 +1,10 @@
 import vertexShader from "./shaders/vertex.wgsl";
 import fragmentShader from "./shaders/fragment.wgsl";
 import { RenderData } from "../model/definitions";
+import { CubeMesh } from "./cubeMesh";
+import { ReadonlyVec3, mat4 } from "gl-matrix";
+import { vec3 } from "gl-matrix";
+import { Deg2Rad } from "../model/math";
 
 export class Renderer {
 
@@ -14,7 +18,6 @@ export class Renderer {
 
     // Pipeline objects
     pipeline: GPURenderPipeline;
-    bindGroup: GPUBindGroup;
     bindGroupLayout: GPUBindGroupLayout;
 
     // Depth Stencil stuff 
@@ -23,6 +26,12 @@ export class Renderer {
     depthStencilView: GPUTextureView;
     depthStencilAttachment: GPURenderPassDepthStencilAttachment;
 
+    // Assets
+    cubeMesh: CubeMesh;
+    bindGroup: GPUBindGroup;
+    transformBuffer: GPUBuffer;
+    volumeBuffer: GPUBuffer;
+
     constructor(canvas: HTMLCanvasElement){
         this.canvas = canvas;
     }
@@ -30,6 +39,8 @@ export class Renderer {
     async Initialize() {
 
         await this.setupDevice();
+
+        await this.createAssets();
 
         await this.makeDepthBufferResources();
 
@@ -55,6 +66,20 @@ export class Renderer {
             alphaMode: "opaque"
         });
 
+    }
+
+    async createAssets() {
+        this.cubeMesh = new CubeMesh(this.device);
+
+        this.transformBuffer = this.device.createBuffer({
+            size: 64 * 3,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+
+        this.volumeBuffer = this.device.createBuffer({
+            size: 32, 
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
     }
 
     async makeDepthBufferResources() {
@@ -101,7 +126,18 @@ export class Renderer {
     async makePipeline() {
         
         this.bindGroupLayout = this.device.createBindGroupLayout({
-            entries: []
+            entries: [
+                {
+                    binding: 0,
+                    visibility: GPUShaderStage.VERTEX,
+                    buffer: {}
+                },
+                {
+                    binding: 1,
+                    visibility: GPUShaderStage.VERTEX,
+                    buffer: {}
+                }
+            ]
         });
 
         const pipelineLayout = this.device.createPipelineLayout({
@@ -113,7 +149,8 @@ export class Renderer {
                 module : this.device.createShaderModule({
                     code : vertexShader
                 }),
-                entryPoint : "vs_main"
+                entryPoint : "vs_main",
+                buffers: [this.cubeMesh.bufferLayout]
             },
     
             fragment : {
@@ -138,17 +175,48 @@ export class Renderer {
     async makeBindGroups() {
         this.bindGroup = this.device.createBindGroup({
             layout: this.bindGroupLayout,
-            entries: []
+            entries: [
+                {
+                    binding: 0,
+                    resource: {
+                        buffer: this.transformBuffer
+                    },
+                },
+                {
+                    binding: 1,
+                    resource: {
+                        buffer: this.volumeBuffer
+                    }
+                }
+            ]
         });
     }
 
     async render(renderables: RenderData) {
         
         //Early exit tests
-        // TODO: Possibly remove third bool
         if (!this.device || !this.pipeline) {
             return;
         }
+
+        /* Gets Transforms */
+        const model = renderables.model_transform;
+        const view = renderables.view_transform;
+        const projection = mat4.create();
+        mat4.perspective(projection, Deg2Rad(45), 800/600, 0.1, 100);
+
+        /* Write to transform buffer */
+        this.device.queue.writeBuffer(this.transformBuffer, 0, <ArrayBuffer>model);
+        this.device.queue.writeBuffer(this.transformBuffer, 64, <ArrayBuffer>view);
+        this.device.queue.writeBuffer(this.transformBuffer, 128, <ArrayBuffer>projection);
+
+        /* Write to volume buffer */
+        // TODO: Continue from here
+        const volumeScale : vec3 = vec3.fromValues(1.0,1.0,1.0);
+        const eyePosition = renderables.eye_position;
+        this.device.queue.writeBuffer(this.volumeBuffer, 0, new Float32Array(volumeScale));
+        this.device.queue.writeBuffer(this.volumeBuffer, 12, new Float32Array(eyePosition));
+
         
         //command encoder: records draw commands for submission
         const commandEncoder : GPUCommandEncoder = this.device.createCommandEncoder();
@@ -167,8 +235,13 @@ export class Renderer {
         });
 
         renderpass.setPipeline(this.pipeline);
+        renderpass.setVertexBuffer(0, this.cubeMesh.buffer);
+        renderpass.setIndexBuffer(this.cubeMesh.indexBuffer, "uint16");
         renderpass.setBindGroup(0, this.bindGroup);
-        renderpass.draw(6, 1, 0, 0);
+        renderpass.drawIndexed(
+            12*3, // vertices per cube
+            1, 0, 0
+        );
         renderpass.end();
 
         this.device.queue.submit([commandEncoder.finish()]);

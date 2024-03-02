@@ -1,12 +1,12 @@
 import { mat4 } from "gl-matrix";
+import { vec3 } from "gl-matrix";
 
 export enum object_types {
-    CUBE,
-    QUAD
+    CUBE
 }
 
 export interface RenderData {
     view_transform: mat4;
-    model_transforms: Float32Array;
-    object_counts: {[obj in object_types]: number}
+    model_transform: mat4;
+    eye_position: vec3;
 }
