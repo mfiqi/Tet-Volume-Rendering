@@ -6,7 +6,7 @@ struct VertexOutput {
     @builtin(position) Position : vec4<f32>,
     @location(0) ray_direction : vec3<f32>,
     @location(1) @interpolate(flat) transformed_eye : vec3<f32>,
-    @location(2) color : vec4<f32>
+    @location(2) color : vec3<f32>
 };
 
 struct TransformData {
@@ -24,9 +24,15 @@ struct VolumeData {
 @binding(1) @group(0) var<uniform> volumeData: VolumeData;
 
 @vertex
-fn vs_main(vertexInput: VertexInput) -> VertexOutput
+fn vs_main(vertexInput: VertexInput, @builtin(vertex_index) index: u32) -> VertexOutput
 {
     var vertexOutput : VertexOutput;
+
+    var color = array<vec3<f32>, 3>(
+        vec3<f32>(1.0,0.0,1.0),
+        vec3<f32>(0.0,1.0,0.0),
+        vec3<f32>(0.0,0.0,1.0)
+    );
 
     var PVM : mat4x4<f32> = transform.projection * transform.view * transform.model;
     var volume_translation : vec3<f32> = vec3<f32>(0.5,0.5,0.5) - volumeData.volumeScale * 0.5;
@@ -34,7 +40,7 @@ fn vs_main(vertexInput: VertexInput) -> VertexOutput
     vertexOutput.Position = PVM * vec4<f32>(vertexInput.aVertexPosition * volumeData.volumeScale + volume_translation, 1.0);
 	vertexOutput.transformed_eye = (volumeData.eyePosition - volume_translation) / volumeData.volumeScale;
 	vertexOutput.ray_direction = vertexOutput.Position.xyz - vertexOutput.transformed_eye;
-    vertexOutput.color = vec4<f32>(0.8,0.4,0.2,1.0);
+    vertexOutput.color = color[index%3];
     
     return vertexOutput;
 }
