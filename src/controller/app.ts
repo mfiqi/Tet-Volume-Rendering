@@ -56,7 +56,6 @@ export class App {
             this.scene.get_renderables()
         );
         
-        //TODO: Uncomment this line to enable frames
         if (running) {
             requestAnimationFrame(this.run);
         }

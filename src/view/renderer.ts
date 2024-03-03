@@ -5,6 +5,7 @@ import { CubeMesh } from "./cubeMesh";
 import { ReadonlyVec3, mat4 } from "gl-matrix";
 import { vec3 } from "gl-matrix";
 import { Deg2Rad } from "../model/math";
+import { Light } from "../model/light";
 
 export class Renderer {
 
@@ -31,6 +32,7 @@ export class Renderer {
     bindGroup: GPUBindGroup;
     transformBuffer: GPUBuffer;
     volumeBuffer: GPUBuffer;
+    lightBuffer: GPUBuffer;
 
     constructor(canvas: HTMLCanvasElement){
         this.canvas = canvas;
@@ -72,12 +74,17 @@ export class Renderer {
         this.cubeMesh = new CubeMesh(this.device);
 
         this.transformBuffer = this.device.createBuffer({
-            size: 64 * 3,
+            size: 64 * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
 
         this.volumeBuffer = this.device.createBuffer({
             size: 32, 
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+
+        this.lightBuffer = this.device.createBuffer({
+            size: 128, 
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
     }
@@ -136,6 +143,11 @@ export class Renderer {
                     binding: 1,
                     visibility: GPUShaderStage.VERTEX,
                     buffer: {}
+                },
+                {
+                    binding: 2,
+                    visibility: GPUShaderStage.VERTEX,
+                    buffer: {}
                 }
             ]
         });
@@ -150,7 +162,7 @@ export class Renderer {
                     code : vertexShader
                 }),
                 entryPoint : "vs_main",
-                buffers: [this.cubeMesh.bufferLayout]
+                buffers: [this.cubeMesh.vertexBufferLayout]
             },
     
             fragment : {
@@ -187,6 +199,12 @@ export class Renderer {
                     resource: {
                         buffer: this.volumeBuffer
                     }
+                },
+                {
+                    binding: 2,
+                    resource: {
+                        buffer: this.lightBuffer
+                    }
                 }
             ]
         });
@@ -204,20 +222,32 @@ export class Renderer {
         const view = renderables.view_transform;
         const projection = mat4.create();
         mat4.perspective(projection, Deg2Rad(45), 800/600, 0.1, 100);
+        const normal = Light.NormalMatrix(view, model);
 
         /* Write to transform buffer */
         this.device.queue.writeBuffer(this.transformBuffer, 0, <ArrayBuffer>model);
         this.device.queue.writeBuffer(this.transformBuffer, 64, <ArrayBuffer>view);
         this.device.queue.writeBuffer(this.transformBuffer, 128, <ArrayBuffer>projection);
+        this.device.queue.writeBuffer(this.transformBuffer, 192, <ArrayBuffer>normal);
 
         /* Write to volume buffer */
-        // TODO: Continue from here
         const volumeScale : vec3 = vec3.fromValues(1.0,1.0,1.0);
         const eyePosition = renderables.eye_position;
         this.device.queue.writeBuffer(this.volumeBuffer, 0, new Float32Array(volumeScale));
         this.device.queue.writeBuffer(this.volumeBuffer, 12, new Float32Array(eyePosition));
 
-        
+        /* Write to light buffer */
+        const light = renderables.light;
+        this.device.queue.writeBuffer(this.lightBuffer, 0, new Float32Array(light.position));
+        this.device.queue.writeBuffer(this.lightBuffer, 12, new Float32Array(light.mat_ambient));
+        this.device.queue.writeBuffer(this.lightBuffer, 24, new Float32Array(light.mat_diffuse));
+        this.device.queue.writeBuffer(this.lightBuffer, 36, new Float32Array(light.mat_specular));
+        this.device.queue.writeBuffer(this.lightBuffer, 48, new Float32Array(light.mat_shine));
+        this.device.queue.writeBuffer(this.lightBuffer, 60, new Float32Array(light.ambient));
+        this.device.queue.writeBuffer(this.lightBuffer, 72, new Float32Array(light.diffuse));
+        this.device.queue.writeBuffer(this.lightBuffer, 84, new Float32Array(light.specular));
+
+
         //command encoder: records draw commands for submission
         const commandEncoder : GPUCommandEncoder = this.device.createCommandEncoder();
         
@@ -235,7 +265,7 @@ export class Renderer {
         });
 
         renderpass.setPipeline(this.pipeline);
-        renderpass.setVertexBuffer(0, this.cubeMesh.buffer);
+        renderpass.setVertexBuffer(0, this.cubeMesh.vertexBuffer);
         renderpass.setIndexBuffer(this.cubeMesh.indexBuffer, "uint16");
         renderpass.setBindGroup(0, this.bindGroup);
         renderpass.drawIndexed(

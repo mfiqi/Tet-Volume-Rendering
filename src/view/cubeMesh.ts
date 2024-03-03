@@ -1,7 +1,9 @@
 export class CubeMesh {
-    buffer: GPUBuffer
+
+    vertexBuffer: GPUBuffer
+    vertexBufferLayout: GPUVertexBufferLayout
+
     indexBuffer: GPUBuffer
-    bufferLayout: GPUVertexBufferLayout
 
     constructor(device: GPUDevice) {
         this.createVertexBuffer(device); // creates vertices and color arrays
@@ -9,38 +11,39 @@ export class CubeMesh {
     }
 
     createVertexBuffer(device: GPUDevice) {
-        // x y z
+        // x y z ----------- Normal vector
+        // TODO: Possibly lookinto the vertex normal locations if there are no other erros
         const vertices: Float32Array = new Float32Array(
             [
-                0, 0, 1,
-                1, 0, 1,
-                1, 1, 1,
-                0, 1, 1,
+                0, 0, 1,        -1.0, 0.0, 0.0,
+                1, 0, 1,        -1.0, 0.0, 0.0,
+                1, 1, 1,        -1.0, 0.0, 0.0,
+                0, 1, 1,        -1.0, 0.0, 0.0,
 
-                0, 0, 0,
-                1, 0, 0,
-                1, 1, 0,
-                0, 1, 0,
+                0, 0, 0,        1.0, 0.0, 0.0,
+                1, 0, 0,        1.0, 0.0, 0.0,
+                1, 1, 0,        1.0, 0.0, 0.0,
+                0, 1, 0,        1.0, 0.0, 0.0,
 
-                0, 1, 1,
-                1, 1, 1,
-                1, 1, 0,
-                0, 1, 0,
+                0, 1, 1,        0.0, -1.0, 0.0,
+                1, 1, 1,        0.0, -1.0, 0.0,
+                1, 1, 0,        0.0, -1.0, 0.0,
+                0, 1, 0,        0.0, -1.0, 0.0,
 
-                0, 0, 1,
-                1, 0, 1,
-                1, 0, 0,
-                0, 0, 0,
+                0, 0, 1,        0.0, 1.0, 0.0,
+                1, 0, 1,        0.0, 1.0, 0.0,
+                1, 0, 0,        0.0, 1.0, 0.0,
+                0, 0, 0,        0.0, 1.0, 0.0,
 
-                1, 0, 1,
-                1, 0, 0,
-                1, 1, 0,
-                1, 1, 1,
+                1, 0, 1,        0.0, 0.0, 1.0,
+                1, 0, 0,        0.0, 0.0, 1.0,
+                1, 1, 0,        0.0, 0.0, 1.0,
+                1, 1, 1,        0.0, 0.0, 1.0,
 
-                0, 0, 1,
-                0, 0, 0,
-                0, 1, 0,
-                0, 1, 1
+                0, 0, 1,        0.0, 0.0, -1.0,
+                0, 0, 0,        0.0, 0.0, -1.0,
+                0, 1, 0,        0.0, 0.0, -1.0,
+                0, 1, 1,        0.0, 0.0, -1.0
             ]
         );
 
@@ -54,21 +57,27 @@ export class CubeMesh {
             mappedAtCreation: true //  allows buffer to be written by the CPU
         };
 
-        this.buffer = device.createBuffer(descriptor);
+        this.vertexBuffer = device.createBuffer(descriptor);
 
         //Buffer has been created, now load in the vertices
-        new Float32Array(this.buffer.getMappedRange()).set(vertices);
-        this.buffer.unmap();
+        new Float32Array(this.vertexBuffer.getMappedRange()).set(vertices);
+        this.vertexBuffer.unmap();
 
         //Defines buffer layout
-        this.bufferLayout = {
-            arrayStride: 12, // to get to next element in array, step through 6 ints, int = 4 bytes, 6 ints = 20 bytes
+        this.vertexBufferLayout = {
+            arrayStride: 24, // to get to next element in array, step through 6 ints, int = 4 bytes, 6 ints = 20 bytes
             attributes: [
                 // Position
                 {
                     shaderLocation: 0,
                     format: "float32x3",
                     offset: 0
+                },
+                // Vertex Normal
+                {
+                    shaderLocation: 1,
+                    format: "float32x3",
+                    offset: 12
                 }
             ]
         }

@@ -5,3 +5,5 @@ Then check if the ray entrance and ray exit colors look correct.
     - Detect when an intersection occurs
     - Find the distance of that intersection
     - Use that distance to color the cube
+
+If something goes wrong, check the vertex normal buffers in cubeMesh.ts
