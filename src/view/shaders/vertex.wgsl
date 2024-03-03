@@ -5,7 +5,8 @@ struct VertexInput {
 struct VertexOutput {
     @builtin(position) Position : vec4<f32>,
     @location(0) ray_direction : vec3<f32>,
-    @location(1) @interpolate(flat) transformed_eye : vec3<f32>
+    @location(1) @interpolate(flat) transformed_eye : vec3<f32>,
+    @location(2) color : vec4<f32>
 };
 
 struct TransformData {
@@ -33,6 +34,7 @@ fn vs_main(vertexInput: VertexInput) -> VertexOutput
     vertexOutput.Position = PVM * vec4<f32>(vertexInput.aVertexPosition * volumeData.volumeScale + volume_translation, 1.0);
 	vertexOutput.transformed_eye = (volumeData.eyePosition - volume_translation) / volumeData.volumeScale;
 	vertexOutput.ray_direction = vertexOutput.Position.xyz - vertexOutput.transformed_eye;
+    vertexOutput.color = vec4<f32>(0.8,0.4,0.2,1.0);
     
     return vertexOutput;
 }

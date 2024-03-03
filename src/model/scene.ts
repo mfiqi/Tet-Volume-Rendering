@@ -14,7 +14,7 @@ export class Scene {
     }
 
     update() {
-        this.cube.update();
+        //this.cube.update();
         this.camera.update();
     }
 

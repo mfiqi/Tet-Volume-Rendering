@@ -10,6 +10,7 @@ export class Cube {
         this.position = position;
         this.eulers = vec3.create();
         this.eulers[2] = degrees;
+        this.model = mat4.create();
     }
 
     update() {

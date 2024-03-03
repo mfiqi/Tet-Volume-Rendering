@@ -1,0 +1,7 @@
+Instead of coloring the object based on ray direction, color it based on the distance from the ray to the intersection point.
+Then check if the ray entrance and ray exit colors look correct.
+
+    - Use the ray marching algorithm
+    - Detect when an intersection occurs
+    - Find the distance of that intersection
+    - Use that distance to color the cube
