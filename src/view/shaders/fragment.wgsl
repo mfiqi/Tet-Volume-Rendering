@@ -1,7 +1,7 @@
 struct FragmentInput {
     @builtin(position) pixel: vec4<f32>,
     @location(0) ray_direction : vec3<f32>,
-    @location(1) @interpolate(flat) transformed_eye : vec3<f32>,
+    @location(1) @interpolate(flat) eyePosition : vec3<f32>,
     @location(2) color : vec3<f32>
 };
 
@@ -28,14 +28,19 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
 
 	// Step 2: Intersect the ray with the volume bounds to find the interval
 	// along the ray overlapped by the volume.
-	var t_hit: vec2<f32> = intersect_box(fragmentInput.transformed_eye, rayDir);
+	var t_hit: vec2<f32> = intersect_box(fragmentInput.eyePosition, rayDir);
+    var t_enter = t_hit.x;
+    var t_exit = t_hit.y;
+    var sigma_a: f32 = 0.1; 
+    var T = exp(-t_enter * sigma_a);
 
-    var near_intersection = fragmentInput.transformed_eye + rayDir * t_hit.x;
-    near_intersection = normalize(near_intersection);
+    //var stepSize = (t_enter - t_exit) / 25.0;
+    //for (var t = t_enter; t<t_exit; t+=stepSize) {
+    //    
+    //}
 
-    var color = fragmentInput.color * near_intersection;
 
-    return vec4<f32>(color,1.0);
+    return vec4<f32>(fragmentInput.color,1.0);
 }
 
 // ---------Beer-Lambert law-----------------------------
