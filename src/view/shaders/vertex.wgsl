@@ -6,8 +6,7 @@ struct VertexInput {
 struct VertexOutput {
     @builtin(position) Position : vec4<f32>,
     @location(0) ray_direction : vec3<f32>,
-    @location(1) @interpolate(flat) eyePosition : vec3<f32>,
-    @location(2) color : vec3<f32>
+    @location(1) @interpolate(flat) eyePosition : vec3<f32>
 };
 
 struct TransformData {
@@ -74,15 +73,9 @@ fn compute_light(
 }
 
 @vertex
-fn vs_main(vertexInput: VertexInput, @builtin(vertex_index) index: u32) -> VertexOutput
+fn vs_main(vertexInput: VertexInput) -> VertexOutput
 {
     var vertexOutput : VertexOutput;
-
-    var color = array<vec3<f32>, 3>(
-        vec3<f32>(1.0,0.0,0.0),
-        vec3<f32>(0.0,1.0,0.0),
-        vec3<f32>(0.0,0.0,1.0)
-    );
 
     var PVM : mat4x4<f32> = transform.projection * transform.view * transform.model;
 
@@ -96,7 +89,5 @@ fn vs_main(vertexInput: VertexInput, @builtin(vertex_index) index: u32) -> Verte
                              transform.model,
                              transform.normal);
                              
-    vertexOutput.color = color[index%3] + light;
-
     return vertexOutput;
 }

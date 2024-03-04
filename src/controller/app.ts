@@ -65,16 +65,16 @@ export class App {
         this.keyLabel.innerText = event.code;
 
         if (event.code == "KeyW") {
-            this.forwards_amount = 0.02;
+            this.forwards_amount = 0.04;
         }
         if (event.code == "KeyS") {
-            this.forwards_amount = -0.02;
+            this.forwards_amount = -0.04;
         }
         if (event.code == "KeyA") {
-            this.right_amount = -0.02;
+            this.right_amount = -0.04;
         }
         if (event.code == "KeyD") {
-            this.right_amount = 0.02;
+            this.right_amount = 0.04;
         }
     }
 

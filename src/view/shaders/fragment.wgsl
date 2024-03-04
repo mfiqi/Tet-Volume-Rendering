@@ -1,8 +1,7 @@
 struct FragmentInput {
     @builtin(position) pixel: vec4<f32>,
     @location(0) ray_direction : vec3<f32>,
-    @location(1) @interpolate(flat) eyePosition : vec3<f32>,
-    @location(2) color : vec3<f32>
+    @location(1) @interpolate(flat) eyePosition : vec3<f32>
 };
 
 // Calculates ray box intersection
@@ -31,6 +30,7 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
 	var t_hit: vec2<f32> = intersect_box(fragmentInput.eyePosition, rayDir);
     var t_enter = t_hit.x;
     var t_exit = t_hit.y;
+
     var sigma_a: f32 = 0.1; 
     var T = exp(-t_enter * sigma_a);
 
@@ -39,8 +39,7 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     //    
     //}
 
-
-    return vec4<f32>(fragmentInput.color,1.0);
+    return vec4<f32>(fragmentInput.eyePosition + (rayDir*t_enter),1.0);
 }
 
 // ---------Beer-Lambert law-----------------------------
