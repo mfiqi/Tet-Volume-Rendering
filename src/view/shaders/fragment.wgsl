@@ -1,7 +1,8 @@
 struct FragmentInput {
     @builtin(position) pixel: vec4<f32>,
     @location(0) ray_direction : vec3<f32>,
-    @location(1) @interpolate(flat) eyePosition : vec3<f32>
+    @location(1) @interpolate(flat) eyePosition : vec3<f32>,
+    @location(2) color : vec3<f32>
 };
 
 // Calculates ray box intersection
@@ -34,12 +35,13 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     var sigma_a: f32 = 0.1; 
     var T = exp(-t_enter * sigma_a);
 
-    //var stepSize = (t_enter - t_exit) / 25.0;
-    //for (var t = t_enter; t<t_exit; t+=stepSize) {
-    //    
-    //}
-
+    var stepSize = (t_enter - t_exit) / 25.0;
+    for (var t = t_enter; t<t_exit; t+=stepSize) {
+        
+    }
+    
     return vec4<f32>(fragmentInput.eyePosition + (rayDir*t_enter),1.0);
+    //return vec4<f32>(fragmentInput.color,1.0);
 }
 
 // ---------------------------------- NOTES -------------------------------------

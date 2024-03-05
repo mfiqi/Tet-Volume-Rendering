@@ -6,7 +6,8 @@ struct VertexInput {
 struct VertexOutput {
     @builtin(position) Position : vec4<f32>,
     @location(0) ray_direction : vec3<f32>,
-    @location(1) @interpolate(flat) eyePosition : vec3<f32>
+    @location(1) @interpolate(flat) eyePosition : vec3<f32>,
+    @location(2) color : vec3<f32>
 };
 
 struct TransformData {
@@ -36,6 +37,7 @@ struct LightData {
 @binding(1) @group(0) var<uniform> volumeData: VolumeData;
 @binding(2) @group(0) var<uniform> lightData: LightData;
 
+// Computes light at a given vertex
 fn compute_light(
     aVertexPosition: vec3<f32>,
     aVertexNormal: vec3<f32>,
@@ -88,6 +90,7 @@ fn vs_main(vertexInput: VertexInput) -> VertexOutput
                              transform.view,
                              transform.model,
                              transform.normal);
-                             
+
+    vertexOutput.color = light;
     return vertexOutput;
 }
