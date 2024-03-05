@@ -7,6 +7,8 @@ import { vec3 } from "gl-matrix";
 import { Deg2Rad } from "../model/math";
 import { Light } from "../model/light";
 
+import { makeVolume } from "./volume";
+
 export class Renderer {
 
     canvas: HTMLCanvasElement;
@@ -49,6 +51,8 @@ export class Renderer {
         await this.makePipeline();
 
         await this.makeBindGroups();
+
+        await this.makeVolume();
     }
 
     async setupDevice() {
@@ -208,6 +212,10 @@ export class Renderer {
                 }
             ]
         });
+    }
+
+    async makeVolume() {
+        await makeVolume(this.device);
     }
 
     async render(renderables: RenderData) {
