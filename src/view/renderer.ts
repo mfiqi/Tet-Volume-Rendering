@@ -43,28 +43,28 @@ export class Renderer {
     volumeScale: number[];
     volumeTexture: GPUTexture;
     colormapTexture: GPUTexture;
+    accumBuffer: GPUTexture;
+    sampler: GPUSampler;
 
     constructor(canvas: HTMLCanvasElement){
         this.canvas = canvas;
     }
 
     async Initialize() {
-
         await this.setupDevice();
 
         await this.createAssets();
+
+        await this.makeVolume();
 
         await this.makeDepthBufferResources();
 
         await this.makePipeline();
 
         await this.makeBindGroups();
-
-        await this.makeVolume();
     }
 
     async setupDevice() {
-
         //adapter: wrapper around (physical) GPU.
         //Describes features and limits
         this.adapter = <GPUAdapter> await navigator.gpu?.requestAdapter();
@@ -79,7 +79,6 @@ export class Renderer {
             format: this.format,
             alphaMode: "premultiplied"
         });
-
     }
 
     async createAssets() {
@@ -160,6 +159,32 @@ export class Renderer {
                     binding: 2,
                     visibility: GPUShaderStage.VERTEX,
                     buffer: {}
+                },
+                {
+                    binding: 3,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    buffer: {},
+                    texture: {viewDimension: "3d"}
+                },
+                {
+                    binding: 4,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    buffer: {},
+                    texture: {viewDimension: "2d"}
+                },
+                {
+                    binding: 5,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    buffer: {},
+                    sampler: {type: "filtering"}
+                },
+                {
+                    binding: 6,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    storageTexture: {
+                        access: "read-write",
+                        format: "rgba32float"
+                    }
                 }
             ]
         });
@@ -183,12 +208,18 @@ export class Renderer {
                 }),
                 entryPoint : "fs_main",
                 targets : [{
-                    format : this.format
+                    format : this.format,
+                    blend: {
+                        color: {srcFactor: "one", dstFactor: "one-minus-src-alpha"},
+                        alpha: {srcFactor: "one", dstFactor: "one-minus-src-alpha"}
+                    }
                 }]
             },
-    
+            
+            // TODO: Potentially change to triangle-strip
             primitive : {
-                topology : "triangle-list"
+                topology : "triangle-list",
+                cullMode: "front" // TODO: Possibly remove if everything works, but there are visual errors
             },
     
             layout: pipelineLayout,
@@ -217,13 +248,33 @@ export class Renderer {
                     resource: {
                         buffer: this.lightBuffer
                     }
+                },
+                {
+                    binding: 3,
+                    resource: this.volumeTexture.createView()
+                },
+                {
+                    binding: 4,
+                    resource: this.colormapTexture.createView()
+                },
+                {
+                    binding: 5,
+                    resource: this.sampler
+                },
+                {
+                    binding: 6,
+                    resource: this.accumBuffer.createView() // TODO: possibly change to view
                 }
             ]
         });
     }
 
     async makeVolume() {
-        // volume.ts
+        this.sampler = this.device.createSampler({
+            magFilter: "linear",
+            minFilter: "linear",
+        });
+
         this.volumeDims = [256,256,256];
 
         const longestAxis = Math.max(this.volumeDims[0], Math.max(this.volumeDims[1], this.volumeDims[2]));
@@ -240,20 +291,11 @@ export class Renderer {
 
         this.volumeTexture = await uploadVolume(this.device, this.volumeDims, this.volumeData);
         
-        var accumBuffers = [
-            this.device.createTexture({
-                size: [this.canvas.width, this.canvas.height, 1],
-                format: "rgba32float",
-                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING
-            }),
-            this.device.createTexture({
-                size: [this.canvas.width, this.canvas.height, 1],
-                format: "rgba32float",
-                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING
-            })
-        ];
-
-        var accumBufferViews = [accumBuffers[0].createView(), accumBuffers[1].createView()];
+        this.accumBuffer = this.device.createTexture({
+            size: [this.canvas.width, this.canvas.height, 1],
+            format: "rgba32float",
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING
+        })
     }
 
     async render(renderables: RenderData) {
@@ -302,14 +344,15 @@ export class Renderer {
         //renderpass: holds draw commands, allocated from command encoder
         const renderpass : GPURenderPassEncoder = commandEncoder.beginRenderPass({
             colorAttachments: [{
-                view: textureView,
-                clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+                view: textureView, //TODO: Possibly undefined
+                clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 }, // TODO: Potentially change to linearToSRGB color
                 loadOp: "clear",
                 storeOp: "store"
             }],
             depthStencilAttachment: this.depthStencilAttachment
         });
 
+        // TODO: low priority: frame_id
         renderpass.setPipeline(this.pipeline);
         renderpass.setVertexBuffer(0, this.cubeMesh.vertexBuffer);
         renderpass.setIndexBuffer(this.cubeMesh.indexBuffer, "uint16");

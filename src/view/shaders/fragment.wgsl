@@ -5,6 +5,11 @@ struct FragmentInput {
     @location(2) color : vec3<f32>
 };
 
+@group(0) @binding(3) var volume: texture_3d<f32>;
+@group(0) @binding(4) var colormap: texture_2d<f32>;
+@group(0) @binding(5) var tex_sampler: sampler;
+@group(0) @binding(6) var accum_buffer: texture_storage_2d<rgba32float, read_write>; //TODO: Possibly use two storage variables
+
 // Calculates ray box intersection
 fn intersect_box(origin: vec3<f32>, rayDir: vec3<f32>) -> vec2<f32>
 {
