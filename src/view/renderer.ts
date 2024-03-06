@@ -43,7 +43,8 @@ export class Renderer {
     volumeScale: number[];
     volumeTexture: GPUTexture;
     colormapTexture: GPUTexture;
-    accumBuffer: GPUTexture;
+    accumBuffers: GPUTexture[];
+    accumBufferViews: GPUTextureView[];
     sampler: GPUSampler;
 
     constructor(canvas: HTMLCanvasElement){
@@ -163,26 +164,28 @@ export class Renderer {
                 {
                     binding: 3,
                     visibility: GPUShaderStage.FRAGMENT,
-                    buffer: {},
                     texture: {viewDimension: "3d"}
                 },
                 {
                     binding: 4,
                     visibility: GPUShaderStage.FRAGMENT,
-                    buffer: {},
                     texture: {viewDimension: "2d"}
                 },
                 {
                     binding: 5,
                     visibility: GPUShaderStage.FRAGMENT,
-                    buffer: {},
                     sampler: {type: "filtering"}
                 },
                 {
                     binding: 6,
                     visibility: GPUShaderStage.FRAGMENT,
+                    texture: {sampleType: "unfilterable-float", viewDimension: "2d"}
+                },
+                {
+                    binding: 7,
+                    visibility: GPUShaderStage.FRAGMENT,
                     storageTexture: {
-                        access: "read-write",
+                        access: "write-only",
                         format: "rgba32float"
                     }
                 }
@@ -219,7 +222,8 @@ export class Renderer {
             // TODO: Potentially change to triangle-strip
             primitive : {
                 topology : "triangle-list",
-                cullMode: "front" // TODO: Possibly remove if everything works, but there are visual errors
+                // Possibly remove if everything works, but there are visual errors
+                //cullMode: "front" 
             },
     
             layout: pipelineLayout,
@@ -261,9 +265,15 @@ export class Renderer {
                     binding: 5,
                     resource: this.sampler
                 },
+                // Updated each frame because we need to ping pong the accumulation buffers
+                // TODO: Possibly change to null
                 {
                     binding: 6,
-                    resource: this.accumBuffer.createView() // TODO: possibly change to view
+                    resource: this.accumBufferViews[0]
+                },
+                {
+                    binding: 7,
+                    resource: this.accumBufferViews[1]
                 }
             ]
         });
@@ -290,12 +300,21 @@ export class Renderer {
         this.volumeData = await fetchVolume("dist/data/bonsai_256x256x256_uint8.raw");
 
         this.volumeTexture = await uploadVolume(this.device, this.volumeDims, this.volumeData);
-        
-        this.accumBuffer = this.device.createTexture({
-            size: [this.canvas.width, this.canvas.height, 1],
-            format: "rgba32float",
-            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING
-        })
+
+        this.accumBuffers = [
+            this.device.createTexture({
+                size: [this.canvas.width, this.canvas.height, 1],
+                format: "rgba32float",
+                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING
+            }),
+            this.device.createTexture({
+                size: [this.canvas.width, this.canvas.height, 1],
+                format: "rgba32float",
+                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING
+            })
+        ];
+    
+        this.accumBufferViews = [this.accumBuffers[0].createView(), this.accumBuffers[1].createView()];
     }
 
     async render(renderables: RenderData) {
@@ -304,6 +323,9 @@ export class Renderer {
         if (!this.device || !this.pipeline) {
             return;
         }
+
+        //bindGroupEntries[4].resource = accumBufferViews[frameId % 2];
+        //bindGroupEntries[5].resource = accumBufferViews[(frameId + 1) % 2];
 
         /* Gets Transforms */
         const model = renderables.model_transform;
