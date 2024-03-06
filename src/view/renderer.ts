@@ -7,7 +7,8 @@ import { vec3 } from "gl-matrix";
 import { Deg2Rad } from "../model/math";
 import { Light } from "../model/light";
 
-import { uploadImage, fetchVolume } from "./volume";
+/* Source */
+import { uploadImage, fetchVolume, uploadVolume } from "./volume";
 
 export class Renderer {
 
@@ -40,6 +41,7 @@ export class Renderer {
     volumeData: Uint8Array;
     volumeDims: number[];
     volumeScale: number[];
+    volumeTexture: GPUTexture;
     colormapTexture: GPUTexture;
 
     constructor(canvas: HTMLCanvasElement){
@@ -234,7 +236,9 @@ export class Renderer {
 
         this.colormapTexture = await uploadImage(this.device, "dist/color/rainbow.png");
 
-        this.volumeData = await await fetchVolume("dist/data/bonsai_256x256x256_uint8.raw");
+        this.volumeData = await fetchVolume("dist/data/bonsai_256x256x256_uint8.raw");
+
+        this.volumeTexture = await uploadVolume(this.device, this.volumeDims, this.volumeData);
         
         var accumBuffers = [
             this.device.createTexture({

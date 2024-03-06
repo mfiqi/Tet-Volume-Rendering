@@ -1,3 +1,8 @@
+/* 
+* Source code for obtaining volume dimensions of a dataset. 
+* https://github.com/Twinklebear/webgpu-volume-pathtracer/blob/main/src/volume.js
+*/
+
 export async function uploadImage(device: GPUDevice, imageSrc: string) {
     var image = new Image();
     image.src = imageSrc;
@@ -50,7 +55,7 @@ export async function fetchVolume(file: string) {
     }
 }
 
-async function uploadVolume(device: GPUDevice, volumeDims: number[], volumeData: Uint8Array) {
+export async function uploadVolume(device: GPUDevice, volumeDims: number[], volumeData: Uint8Array) {
     var volumeTexture = device.createTexture({
         size: volumeDims,
         format: "r8unorm",
@@ -76,7 +81,8 @@ async function uploadVolume(device: GPUDevice, volumeDims: number[], volumeData:
 
     device.queue.submit([commandEncoder.finish()]);
     await device.queue.onSubmittedWorkDone();
-
+    
+    console.log("Successfully uploaded volume!");
     return volumeTexture;
 }
 
