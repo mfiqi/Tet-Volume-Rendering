@@ -7,7 +7,7 @@ import { vec3 } from "gl-matrix";
 import { Deg2Rad } from "../model/math";
 import { Light } from "../model/light";
 
-import { makeVolume } from "./volume";
+import { uploadImage, fetchVolume } from "./volume";
 
 export class Renderer {
 
@@ -35,6 +35,12 @@ export class Renderer {
     transformBuffer: GPUBuffer;
     volumeBuffer: GPUBuffer;
     lightBuffer: GPUBuffer;
+
+    // Volume assets
+    volumeData: Uint8Array;
+    volumeDims: number[];
+    volumeScale: number[];
+    colormapTexture: GPUTexture;
 
     constructor(canvas: HTMLCanvasElement){
         this.canvas = canvas;
@@ -215,7 +221,35 @@ export class Renderer {
     }
 
     async makeVolume() {
-        await makeVolume(this.device);
+        // volume.ts
+        this.volumeDims = [256,256,256];
+
+        const longestAxis = Math.max(this.volumeDims[0], Math.max(this.volumeDims[1], this.volumeDims[2]));
+
+        this.volumeScale = [
+            this.volumeDims[0] / longestAxis,
+            this.volumeDims[1] / longestAxis,
+            this.volumeDims[2] / longestAxis
+        ];
+
+        this.colormapTexture = await uploadImage(this.device, "dist/color/rainbow.png");
+
+        this.volumeData = await await fetchVolume("dist/data/bonsai_256x256x256_uint8.raw");
+        
+        var accumBuffers = [
+            this.device.createTexture({
+                size: [this.canvas.width, this.canvas.height, 1],
+                format: "rgba32float",
+                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING
+            }),
+            this.device.createTexture({
+                size: [this.canvas.width, this.canvas.height, 1],
+                format: "rgba32float",
+                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING
+            })
+        ];
+
+        var accumBufferViews = [accumBuffers[0].createView(), accumBuffers[1].createView()];
     }
 
     async render(renderables: RenderData) {

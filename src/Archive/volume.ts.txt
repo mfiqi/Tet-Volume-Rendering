@@ -1,3 +1,23 @@
+import * as fs from 'fs';
+
+export async function makeVolume(device: GPUDevice) {
+    var volumeDims = [256,256,256];
+    
+    const longestAxis = Math.max(volumeDims[0], Math.max(volumeDims[1], volumeDims[2]));
+
+    var volumeScale = [
+        volumeDims[0] / longestAxis,
+        volumeDims[1] / longestAxis,
+        volumeDims[2] / longestAxis
+    ];
+
+    var colormapTexture: GPUTexture = await uploadImage(device, "dist/color/rainbow.png");
+
+    var volumeData: Uint8Array = await fetchVolume("dist/data/bonsai_256x256x256_uint8.raw");
+    
+    return volumeData;
+}
+
 export async function uploadImage(device: GPUDevice, imageSrc: string) {
     var image = new Image();
     image.src = imageSrc;
@@ -15,8 +35,7 @@ export async function uploadImage(device: GPUDevice, imageSrc: string) {
     var dst = {texture: texture};
     device.queue.copyExternalImageToTexture(src, dst, [bitmap.width, bitmap.height]);
     await device.queue.onSubmittedWorkDone();
-    
-    console.log("Successfully uploaded image!");
+
     return texture;
 }
 
