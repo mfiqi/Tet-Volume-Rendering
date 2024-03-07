@@ -150,10 +150,49 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     //}
 
     let pixel = vec2<i32>(i32(fragmentInput.pixel.x), i32(fragmentInput.pixel.y));
-    var rng = get_rng(pixel.x + pixel.y, pixel, vec2<i32>(800, 600));
-    sample_woodcock(fragmentInput.eyePosition, rayDir, t_hit, &t, &rng);
+    var rng = get_rng(u32(pixel.x + pixel.y), pixel, vec2<i32>(800, 600));
+    //sample_woodcock(fragmentInput.eyePosition, rayDir, t_hit, &t, &rng);
     
-    var texel = textureSample(volume, tex_sampler, fragmentInput.eyePosition + (rayDir*t_enter));
+    var illum = vec3<f32>(0.0);
+    var throughput = vec3<f32>(1.0);
+    var transmittance = 1.0;
+    var had_any_event = false;
+    var pos = fragmentInput.eyePosition;
+
+    //var texel = textureSample(volume, tex_sampler, fragmentInput.eyePosition + (rayDir*t_enter));
+
+    for (var i = 0; i < 4; i += 1) {
+        var t = t_hit.x;
+        var event = sample_woodcock(pos, rayDir, t_hit, &t, &rng);
+        // Update scattered ray position
+        pos = pos + rayDir * t;
+
+        // Sample illumination from the direct light
+        t_hit = intersect_box(pos, rayDir);
+        // We're inside the volume
+        t_hit.x = 0.0;
+            
+        var light_transmittance = delta_tracking_transmittance(pos, light_dir, t_hit, &rng);
+        illum += throughput * light_transmittance * float3(light_emission);
+
+        // Include emission from the volume for emission/absorption scivis model
+        // Scaling the volume emission by the inverse of the opacity from the transferfunction
+        // can give some nice effects. Would be cool to provide control of this
+        illum += throughput * event.color * volume_emission;// * (1.0 - eventtransmittance);
+
+        throughput *= event.color * event.transmittance * params.sigma_s_scale;
+
+        // Scatter in a random direction to continue the ray
+        rayDir = sample_spherical_direction(float2(lcg_randomf(&rng), lcg_randomf(&rng)));
+        t_hit = intersect_box(pos, rayDir);
+        if (t_hit.x > t_hit.y) {
+            illum = float3(0.0, 1.0, 0.0);
+            break;
+        }
+        // We're now inside the volume
+        t_hit.x = 0.0;
+    }
+
     return vec4<f32>(texel.xyz,1.0);
     //return vec4<f32>(fragmentInput.color,1.0);
 }
