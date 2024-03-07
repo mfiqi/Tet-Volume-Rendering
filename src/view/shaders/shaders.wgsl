@@ -289,10 +289,10 @@ fn fragment_main(in: VertexOutput) -> @location(0) float4 {
             t_interval = intersect_box(pos, light_dir);
             // We're inside the volume
             t_interval.x = 0.0;
-            /*
-            var light_transmittance =
-                ratio_tracking_transmittance(pos, light_dir, t_interval, &rng);
-            */
+            
+            //var light_transmittance =
+               //ratio_tracking_transmittance(pos, light_dir, t_interval, &rng);
+            
             var light_transmittance =
                 delta_tracking_transmittance(pos, light_dir, t_interval, &rng);
             illum += throughput * light_transmittance * float3(light_emission);

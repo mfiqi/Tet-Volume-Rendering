@@ -81,9 +81,15 @@ fn vs_main(vertexInput: VertexInput) -> VertexOutput
 
     var PVM : mat4x4<f32> = transform.projection * transform.view * transform.model;
 
-    vertexOutput.Position = PVM * vec4<f32>(vertexInput.aVertexPosition, 1.0);
-	vertexOutput.eyePosition = volumeData.eyePosition;
+    var volume_translation = vec3<f32>(0.5) - volumeData.volumeScale.xyz * 0.5;
+    var world_pos = vertexInput.aVertexPosition * volumeData.volumeScale.xyz + volume_translation;
+    vertexOutput.Position = PVM * vec4<f32>(world_pos, 1.0);
+    vertexOutput.eyePosition = (volumeData.eyePosition.xyz - volume_translation) / volumeData.volumeScale.xyz;
 	vertexOutput.ray_direction = vertexOutput.Position.xyz - vertexOutput.eyePosition;
+
+    //vertexOutput.Position = PVM * vec4<f32>(vertexInput.aVertexPosition, 1.0);
+	//vertexOutput.eyePosition = volumeData.eyePosition;
+	//vertexOutput.ray_direction = vertexOutput.Position.xyz - vertexOutput.eyePosition;
 
     var light = compute_light(vertexInput.aVertexPosition, 
                              vertexInput.aVertexNormal,

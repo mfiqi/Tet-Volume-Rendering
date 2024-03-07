@@ -40,7 +40,7 @@ export class Renderer {
     // Volume assets
     volumeData: Uint8Array;
     volumeDims: number[];
-    volumeScale: number[];
+    volumeScale: vec3;
     volumeTexture: GPUTexture;
     colormapTexture: GPUTexture;
     accumBuffers: GPUTexture[];
@@ -341,9 +341,8 @@ export class Renderer {
         this.device.queue.writeBuffer(this.transformBuffer, 192, <ArrayBuffer>normal);
 
         /* Write to volume buffer */
-        const volumeScale : vec3 = vec3.fromValues(1.0,1.0,1.0);
         const eyePosition = renderables.eye_position;
-        this.device.queue.writeBuffer(this.volumeBuffer, 0, new Float32Array(volumeScale));
+        this.device.queue.writeBuffer(this.volumeBuffer, 0, new Float32Array(this.volumeScale));
         this.device.queue.writeBuffer(this.volumeBuffer, 12, new Float32Array(eyePosition));
 
         /* Write to light buffer */
