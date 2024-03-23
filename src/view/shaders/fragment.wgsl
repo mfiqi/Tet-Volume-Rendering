@@ -137,64 +137,39 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
 	var t_hit: vec2<f32> = intersect_box(fragmentInput.eyePosition, rayDir);
     var t_enter = t_hit.x;
     var t_exit = t_hit.y;
-    var t = t_enter;
 
-    var sigma_a: f32 = 0.1; 
-    var T = exp(-t_enter * sigma_a);
+    // So we don't sample voxels behind the eye
+    t_enter = max(t_enter, 0.0);
 
-    var stepSize = (t_enter - t_exit) / 25.0;
+    // Step 3: Compute the step size to march through the volume grid
+	var dt_vec: vec3<f32> = 1.0 / (vec3<f32>(256.0, 256.0, 256.0) * abs(rayDir));
+	var dt: f32 = min(dt_vec.x, min(dt_vec.y, dt_vec.z));
 
-    //for (var t = t_enter; t<t_exit; t+=stepSize) {
-    //    var coords = fragmentInput.eyePosition + (rayDir*t);
-    //    var texel = textureSample(volume, tex_sampler, fragmentInput.eyePosition + (rayDir*t_enter));
-    //}
+    // Step 4: Starting from the entry point, march the ray through the volume
+	// and sample it
+	var p: vec3<f32> = fragmentInput.eyePosition + t_enter * rayDir;
+    var color: vec4<f32>;
+    for (var t = t_enter; t < t_exit; t += dt) {
+		// Step 4.1: Sample the volume, and color it by the transfer function.
+		// Note that here we don't use the opacity from the transfer function,
+		// and just use the sample value as the opacity
+		var val: f32 = textureSampleLevel(volume, tex_sampler, p, 0.0).r;
+        // todo: possibly change tex_sampler
+		var val_color: vec4<f32> = vec4<f32>(textureSampleLevel(colormap, tex_sampler, vec2<f32>(val, 0.5),0.0).rgb, val);
 
-    let pixel = vec2<i32>(i32(fragmentInput.pixel.x), i32(fragmentInput.pixel.y));
-    var rng = get_rng(u32(pixel.x + pixel.y), pixel, vec2<i32>(800, 600));
-    //sample_woodcock(fragmentInput.eyePosition, rayDir, t_hit, &t, &rng);
-    
-    var illum = vec3<f32>(0.0);
-    var throughput = vec3<f32>(1.0);
-    var transmittance = 1.0;
-    var had_any_event = false;
-    var pos = fragmentInput.eyePosition;
+		// Step 4.2: Accumulate the color and opacity using the front-to-back
+		// compositing equation
+        color = vec4<f32>((1.0 - color.a) * val_color.a * val_color.rgb, (1.0 - color.a) * val_color.a);
 
-    //var texel = textureSample(volume, tex_sampler, fragmentInput.eyePosition + (rayDir*t_enter));
+		// Optimization: break out of the loop when the color is near opaque
+		if (color.a >= 0.95) {
+			break;
+		}
+		p += rayDir * dt;
+	}
 
-    for (var i = 0; i < 4; i += 1) {
-        var t = t_hit.x;
-        var event = sample_woodcock(pos, rayDir, t_hit, &t, &rng);
-        // Update scattered ray position
-        pos = pos + rayDir * t;
-
-        // Sample illumination from the direct light
-        t_hit = intersect_box(pos, rayDir);
-        // We're inside the volume
-        t_hit.x = 0.0;
-            
-        var light_transmittance = delta_tracking_transmittance(pos, light_dir, t_hit, &rng);
-        illum += throughput * light_transmittance * float3(light_emission);
-
-        // Include emission from the volume for emission/absorption scivis model
-        // Scaling the volume emission by the inverse of the opacity from the transferfunction
-        // can give some nice effects. Would be cool to provide control of this
-        illum += throughput * event.color * volume_emission;// * (1.0 - eventtransmittance);
-
-        throughput *= event.color * event.transmittance * params.sigma_s_scale;
-
-        // Scatter in a random direction to continue the ray
-        rayDir = sample_spherical_direction(float2(lcg_randomf(&rng), lcg_randomf(&rng)));
-        t_hit = intersect_box(pos, rayDir);
-        if (t_hit.x > t_hit.y) {
-            illum = float3(0.0, 1.0, 0.0);
-            break;
-        }
-        // We're now inside the volume
-        t_hit.x = 0.0;
-    }
-
-    return vec4<f32>(texel.xyz,1.0);
-    //return vec4<f32>(fragmentInput.color,1.0);
+    return color;
+    //return vec4<f32>(fragmentInput.eyePosition + rayDir * t_enter, 1.0);
 }
 
 // ---------------------------------- NOTES -------------------------------------
