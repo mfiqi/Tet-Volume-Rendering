@@ -26,7 +26,7 @@ export async function uploadImage(device: GPUDevice, imageSrc: string) {
 }
 
 // TODO: Add padding for volumes that are not 256x256x256
-export async function fetchVolume(file: string) {
+export async function fetchVolume(file: string) : Promise<Uint8Array> {
     const volumeDims = [256,256,256];
     const volumeSize = volumeDims[0] * volumeDims[1] * volumeDims[2];
     
@@ -89,3 +89,10 @@ export async function uploadVolume(device: GPUDevice, volumeDims: number[], volu
 function alignTo(val: number, align: number): number {
     return Math.floor((val + align - 1) / align) * align;
 };
+
+export function linearToSRGB(x: number) {
+    if (x <= 0.0031308) {
+        return 12.92 * x;
+    }
+    return 1.055 * Math.pow(x, 1.0 / 2.4) - 0.055;
+}

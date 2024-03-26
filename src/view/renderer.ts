@@ -2,10 +2,11 @@ import vertexShader from "./shaders/vertex.wgsl";
 import fragmentShader from "./shaders/fragment.wgsl";
 import { RenderData } from "../model/definitions";
 import { CubeMesh } from "./cubeMesh";
-import { ReadonlyVec3, mat4 } from "gl-matrix";
+import { ReadonlyVec3, mat4, vec4 } from "gl-matrix";
 import { vec3 } from "gl-matrix";
 import { Deg2Rad } from "../model/math";
 import { Light } from "../model/light";
+import { linearToSRGB } from "./volume";
 
 /* Source */
 import { uploadImage, fetchVolume, uploadVolume } from "./volume";
@@ -46,6 +47,7 @@ export class Renderer {
     accumBuffers: GPUTexture[];
     accumBufferViews: GPUTextureView[];
     sampler: GPUSampler;
+    clearColor: number;
 
     constructor(canvas: HTMLCanvasElement){
         this.canvas = canvas;
@@ -280,6 +282,8 @@ export class Renderer {
     }
 
     async makeVolume() {
+        this.clearColor = linearToSRGB(0.1);
+
         this.sampler = this.device.createSampler({
             magFilter: "linear",
             minFilter: "linear",
@@ -366,7 +370,7 @@ export class Renderer {
         const renderpass : GPURenderPassEncoder = commandEncoder.beginRenderPass({
             colorAttachments: [{
                 view: textureView, //TODO: Possibly undefined
-                clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 }, // TODO: Potentially change to linearToSRGB color
+                clearValue: { r: this.clearColor, g: this.clearColor, b: this.clearColor, a: 1.0 }, 
                 loadOp: "clear",
                 storeOp: "store"
             }],
