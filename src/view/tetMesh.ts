@@ -1,48 +1,29 @@
-export class CubeMesh {
+export class TetMesh {
 
     vertexBuffer: GPUBuffer
     vertexBufferLayout: GPUVertexBufferLayout
-
     indexBuffer: GPUBuffer
 
-    constructor(device: GPUDevice) {
+    neighbors: TetMesh[];
+    tetID: number;
+
+    constructor(device: GPUDevice, tetID: number,
+        LeftTet?: TetMesh, RightTet?: TetMesh, FrontTet?: TetMesh, BottomTet?: TetMesh) {
         this.createVertexBuffer(device); // creates vertices and color arrays
         this.createIndexBuffer(device);
+
+        this.tetID = tetID;
+
     }
 
     createVertexBuffer(device: GPUDevice) {
         // x y z ----------- Normal vector
         const vertices: Float32Array = new Float32Array(
             [
-                0, 0, 1,    1,0,0,
-                1, 0, 1,    0,1,0,
-                1, 1, 1,    0,0,1,
-                0, 1, 1,    1,0,1,
-
-                0, 0, 0,    1,0,0,
-                1, 0, 0,    0,1,0,
-                1, 1, 0,    0,0,1,
-                0, 1, 0,    1,0,1,
-
-                0, 1, 1,    1,0,0,
-                1, 1, 1,    0,1,0,
-                1, 1, 0,    0,0,1,
-                0, 1, 0,    1,0,1,
-
-                0, 0, 1,    1,0,0,
-                1, 0, 1,    0,1,0,
-                1, 0, 0,    0,0,1,
-                0, 0, 0,    1,0,1,
-
-                1, 0, 1,    1,0,0,
-                1, 0, 0,    0,1,0,
-                1, 1, 0,    0,0,1,
-                1, 1, 1,    1,0,1,
-
-                0, 0, 1,    1,0,0,
-                0, 0, 0,    0,1,0,
-                0, 1, 0,    0,0,1,
-                0, 1, 1,    1,0,1
+                0, 0, 1,        1,0,0, // left point            0
+                1, 0, 1,        0,1,0, // right point           1
+                0.5, 1, 0.5,    0,0,1, // highest point         2
+                0.5, 0, 0,      0,0,1 // most forward point     3
             ]
         );
 
@@ -77,48 +58,27 @@ export class CubeMesh {
                     format: "float32x3",
                     offset: 12
                 }
-                
-                /*,
-                // Vertex Normal
-                {
-                    shaderLocation: 1,
-                    format: "float32x3",
-                    offset: 12
-                }*/
             ]
         }
     }
 
     createIndexBuffer(device: GPUDevice) {
-        const cubeIndices: Uint16Array = new Uint16Array(
+        const tetIndices: Uint16Array = new Uint16Array(
             [
-                0, 1, 2,
-                0, 2, 3,
-
-                4, 5, 6,
-                4, 6, 7,
-
-                8, 9, 10,
-                8, 10, 11,
-
-                12, 13, 14,
-                12, 14, 15,
-
-                16, 17, 18,
-                16, 18, 19,
-
-                20, 21, 22,
-                20, 22, 23
+                0, 2, 1, // front triangle
+                0, 3, 2, // left triangle
+                0, 3, 1, // bottom triangle
+                1, 2, 3 // right triangle
             ]
         );
 
         this.indexBuffer = device.createBuffer({
-            size: cubeIndices.byteLength,
+            size: tetIndices.byteLength,
             usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
             mappedAtCreation: true
         });
 
-        new Uint16Array(this.indexBuffer.getMappedRange()).set(cubeIndices);
+        new Uint16Array(this.indexBuffer.getMappedRange()).set(tetIndices);
         this.indexBuffer.unmap();
     }
 }

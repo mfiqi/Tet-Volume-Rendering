@@ -2,6 +2,7 @@ import vertexShader from "./shaders/vertex.wgsl";
 import fragmentShader from "./shaders/fragment.wgsl";
 import { RenderData } from "../model/definitions";
 import { CubeMesh } from "./cubeMesh";
+import { TetMesh } from "./tetMesh";
 import { ReadonlyVec3, mat4, vec4 } from "gl-matrix";
 import { vec3 } from "gl-matrix";
 import { Deg2Rad } from "../model/math";
@@ -33,6 +34,7 @@ export class Renderer {
 
     // Assets
     cubeMesh: CubeMesh;
+    tetMesh: TetMesh;
     bindGroup: GPUBindGroup;
     transformBuffer: GPUBuffer;
     volumeBuffer: GPUBuffer;
@@ -58,7 +60,8 @@ export class Renderer {
 
         await this.createAssets();
 
-        await this.makeVolume();
+        this.clearColor = 0.0;
+        // await this.makeVolume();
 
         await this.makeDepthBufferResources();
 
@@ -86,13 +89,14 @@ export class Renderer {
 
     async createAssets() {
         this.cubeMesh = new CubeMesh(this.device);
+        this.tetMesh = new TetMesh(this.device,0,undefined,undefined,undefined,undefined);
 
         this.transformBuffer = this.device.createBuffer({
             size: 64 * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
 
-        this.volumeBuffer = this.device.createBuffer({
+        /* this.volumeBuffer = this.device.createBuffer({
             size: 32, 
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
@@ -100,7 +104,7 @@ export class Renderer {
         this.lightBuffer = this.device.createBuffer({
             size: 128, 
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-        });
+        }); */
     }
 
     async makeDepthBufferResources() {
@@ -152,7 +156,8 @@ export class Renderer {
                     binding: 0,
                     visibility: GPUShaderStage.VERTEX,
                     buffer: {}
-                },
+                }
+                /*,
                 {
                     binding: 1,
                     visibility: GPUShaderStage.VERTEX,
@@ -190,7 +195,7 @@ export class Renderer {
                         access: "write-only",
                         format: "rgba32float"
                     }
-                }
+                }*/
             ]
         });
 
@@ -204,7 +209,8 @@ export class Renderer {
                     code : vertexShader
                 }),
                 entryPoint : "vs_main",
-                buffers: [this.cubeMesh.vertexBufferLayout]
+                buffers: [this.tetMesh.vertexBufferLayout]
+                //buffers: [this.cubeMesh.vertexBufferLayout]
             },
     
             fragment : {
@@ -242,7 +248,8 @@ export class Renderer {
                     resource: {
                         buffer: this.transformBuffer
                     },
-                },
+                }
+                /*,
                 {
                     binding: 1,
                     resource: {
@@ -276,7 +283,7 @@ export class Renderer {
                 {
                     binding: 7,
                     resource: this.accumBufferViews[1]
-                }
+                }*/
             ]
         });
     }
@@ -344,23 +351,6 @@ export class Renderer {
         this.device.queue.writeBuffer(this.transformBuffer, 128, <ArrayBuffer>projection);
         this.device.queue.writeBuffer(this.transformBuffer, 192, <ArrayBuffer>normal);
 
-        /* Write to volume buffer */
-        const eyePosition = renderables.eye_position;
-        this.device.queue.writeBuffer(this.volumeBuffer, 0, new Float32Array(this.volumeScale));
-        this.device.queue.writeBuffer(this.volumeBuffer, 12, new Float32Array(eyePosition));
-
-        /* Write to light buffer */
-        const light = renderables.light;
-        this.device.queue.writeBuffer(this.lightBuffer, 0, new Float32Array(light.position));
-        this.device.queue.writeBuffer(this.lightBuffer, 12, new Float32Array(light.mat_ambient));
-        this.device.queue.writeBuffer(this.lightBuffer, 24, new Float32Array(light.mat_diffuse));
-        this.device.queue.writeBuffer(this.lightBuffer, 36, new Float32Array(light.mat_specular));
-        this.device.queue.writeBuffer(this.lightBuffer, 48, new Float32Array(light.mat_shine));
-        this.device.queue.writeBuffer(this.lightBuffer, 60, new Float32Array(light.ambient));
-        this.device.queue.writeBuffer(this.lightBuffer, 72, new Float32Array(light.diffuse));
-        this.device.queue.writeBuffer(this.lightBuffer, 84, new Float32Array(light.specular));
-
-
         //command encoder: records draw commands for submission
         const commandEncoder : GPUCommandEncoder = this.device.createCommandEncoder();
         
@@ -377,13 +367,13 @@ export class Renderer {
             depthStencilAttachment: this.depthStencilAttachment
         });
 
-        // TODO: low priority: frame_id
         renderpass.setPipeline(this.pipeline);
-        renderpass.setVertexBuffer(0, this.cubeMesh.vertexBuffer);
-        renderpass.setIndexBuffer(this.cubeMesh.indexBuffer, "uint16");
+        renderpass.setVertexBuffer(0, this.tetMesh.vertexBuffer);
+        renderpass.setIndexBuffer(this.tetMesh.indexBuffer, "uint16");
         renderpass.setBindGroup(0, this.bindGroup);
         renderpass.drawIndexed(
-            12*3, // vertices per cube
+            //12*3, // vertices per cube
+            4*3, // vertices per cube
             1, 0, 0
         );
         renderpass.end();

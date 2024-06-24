@@ -1,13 +1,15 @@
 struct VertexInput {
     @location(0) aVertexPosition : vec3<f32>,
-    @location(1) aVertexNormal : vec3<f32>
+    @location(1) aVertexColor : vec3<f32>,
+    //@location(1) aVertexNormal : vec3<f32>,
+    // @location(2) cameraPosition : vec3<f32>,
+    @builtin(vertex_index) v_id: u32
 };
 
 struct VertexOutput {
     @builtin(position) Position : vec4<f32>,
     @location(0) ray_direction : vec3<f32>,
     @location(1) eyePosition : vec3<f32>,
-    //@location(1) @interpolate(flat) eyePosition : vec3<f32>,
     @location(2) color : vec3<f32>
 };
 
@@ -18,62 +20,9 @@ struct TransformData {
     normal: mat4x4<f32>
 };
 
-struct VolumeData {
-    volumeScale : vec3<f32>,
-    eyePosition : vec3<f32>
-};
 
-struct LightData {
-    lightPosition: vec3<f32>,
-    ambientCoefficient: vec3<f32>,
-    diffuseCoefficient: vec3<f32>,
-    specularCoefficient: vec3<f32>,
-    shine: vec3<f32>,
-    lightAmbient: vec3<f32>,
-    lightDiffuse: vec3<f32>,
-    lightSpecular: vec3<f32>,
-};
 
 @binding(0) @group(0) var<uniform> transform: TransformData;
-@binding(1) @group(0) var<uniform> volumeData: VolumeData;
-@binding(2) @group(0) var<uniform> lightData: LightData;
-
-// Computes light at a given vertex
-fn compute_light(
-    aVertexPosition: vec3<f32>,
-    aVertexNormal: vec3<f32>,
-    V: mat4x4<f32>,
-    M: mat4x4<f32>,
-    N: mat4x4<f32>) -> vec3<f32> 
-{
-    var light_pos_in_eye = lightData.lightPosition;
-    var vNorm = normalize((N * vec4<f32>(aVertexNormal,0.0)).xyz);
-    var eyePosition = (V*M* vec4<f32>(aVertexPosition, 1.0)).xyz;
-
-    // Light and Eye vectors 
-    var L = normalize(light_pos_in_eye - eyePosition);
-    var V_eye = normalize(-eyePosition); //TODO: possibly change
-    var halfLV = normalize(L+V_eye); 
-
-    // Ambient 
-    var ambient = lightData.ambientCoefficient * lightData.lightAmbient; 
-
-    // Diffuse 
-    var NdotL = max(dot(vNorm, L), 0.0);
-    var diffuse = lightData.diffuseCoefficient * lightData.lightDiffuse * NdotL;
-
-    var R = normalize(2.0*NdotL*vNorm - V_eye);
-    var RdotV = max(dot(R, V_eye), 0.0);
-
-    var specular: vec3<f32>;  
-    if (NdotL > 0.0) {
-        specular = lightData.specularCoefficient* lightData.lightSpecular*pow(RdotV, lightData.shine.x); 
-    } else {
-        specular = vec3<f32>(0.0,0.0,0.0);
-    }
-    
-    return ambient + diffuse + specular;    
-}
 
 @vertex
 fn vs_main(vertexInput: VertexInput) -> VertexOutput
@@ -82,22 +31,10 @@ fn vs_main(vertexInput: VertexInput) -> VertexOutput
 
     var PVM : mat4x4<f32> = transform.projection * transform.view * transform.model;
 
-    //var volume_translation = vec3<f32>(0.5) - volumeData.volumeScale.xyz * 0.5;
-    //var world_pos = vertexInput.aVertexPosition * volumeData.volumeScale.xyz + volume_translation;
-    //vertexOutput.Position = PVM * vec4<f32>(world_pos, 1.0);
-    //vertexOutput.eyePosition = (volumeData.eyePosition.xyz - volume_translation) / volumeData.volumeScale.xyz;
+    vertexOutput.Position = PVM * vec4<f32>(vertexInput.aVertexPosition, 1.0);
+    //vertexOutput.eyePosition = volumeData.eyePosition;
 	//vertexOutput.ray_direction = vertexOutput.Position.xyz - vertexOutput.eyePosition;
 
-    vertexOutput.Position = PVM * vec4<f32>(vertexInput.aVertexPosition, 1.0);
-    vertexOutput.eyePosition = volumeData.eyePosition;
-	vertexOutput.ray_direction = vertexOutput.Position.xyz - vertexOutput.eyePosition;
-
-    var light = compute_light(vertexInput.aVertexPosition, 
-                             vertexInput.aVertexNormal,
-                             transform.view,
-                             transform.model,
-                             transform.normal);
-
-    vertexOutput.color = light;
+    vertexOutput.color = vertexInput.aVertexColor;
     return vertexOutput;
 }
