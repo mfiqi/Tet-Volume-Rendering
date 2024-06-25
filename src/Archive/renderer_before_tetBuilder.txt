@@ -11,7 +11,6 @@ import { linearToSRGB } from "./volume";
 
 /* Source */
 import { uploadImage, fetchVolume, uploadVolume } from "./volume";
-import { TetBuilder } from "./tetBuilder";
 
 export class Renderer {
 
@@ -35,6 +34,7 @@ export class Renderer {
 
     // Assets
     cubeMesh: CubeMesh;
+    tetMesh: TetMesh;
     bindGroup: GPUBindGroup;
     transformBuffer: GPUBuffer;
     volumeBuffer: GPUBuffer;
@@ -50,8 +50,6 @@ export class Renderer {
     accumBufferViews: GPUTextureView[];
     sampler: GPUSampler;
     clearColor: number;
-
-    tetMesh: TetBuilder;
 
     constructor(canvas: HTMLCanvasElement){
         this.canvas = canvas;
@@ -91,12 +89,22 @@ export class Renderer {
 
     async createAssets() {
         this.cubeMesh = new CubeMesh(this.device);
-        this.tetMesh = new TetBuilder(this.device);
+        this.tetMesh = new TetMesh(this.device,0,undefined,undefined,undefined,undefined);
 
         this.transformBuffer = this.device.createBuffer({
             size: 64 * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
+
+        /* this.volumeBuffer = this.device.createBuffer({
+            size: 32, 
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+
+        this.lightBuffer = this.device.createBuffer({
+            size: 128, 
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        }); */
     }
 
     async makeDepthBufferResources() {
@@ -149,6 +157,45 @@ export class Renderer {
                     visibility: GPUShaderStage.VERTEX,
                     buffer: {}
                 }
+                /*,
+                {
+                    binding: 1,
+                    visibility: GPUShaderStage.VERTEX,
+                    buffer: {}
+                },
+                {
+                    binding: 2,
+                    visibility: GPUShaderStage.VERTEX,
+                    buffer: {}
+                },
+                {
+                    binding: 3,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    texture: {viewDimension: "3d"}
+                },
+                {
+                    binding: 4,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    texture: {viewDimension: "2d"}
+                },
+                {
+                    binding: 5,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    sampler: {type: "filtering"}
+                },
+                {
+                    binding: 6,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    texture: {sampleType: "unfilterable-float", viewDimension: "2d"}
+                },
+                {
+                    binding: 7,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    storageTexture: {
+                        access: "write-only",
+                        format: "rgba32float"
+                    }
+                }*/
             ]
         });
 
@@ -162,11 +209,7 @@ export class Renderer {
                     code : vertexShader
                 }),
                 entryPoint : "vs_main",
-                buffers: 
-                [
-                    this.tetMesh.vertexBufferLayout,
-                    this.tetMesh.colorBufferLayout
-                ]
+                buffers: [this.tetMesh.vertexBufferLayout]
                 //buffers: [this.cubeMesh.vertexBufferLayout]
             },
     
@@ -206,6 +249,41 @@ export class Renderer {
                         buffer: this.transformBuffer
                     },
                 }
+                /*,
+                {
+                    binding: 1,
+                    resource: {
+                        buffer: this.volumeBuffer
+                    }
+                },
+                {
+                    binding: 2,
+                    resource: {
+                        buffer: this.lightBuffer
+                    }
+                },
+                {
+                    binding: 3,
+                    resource: this.volumeTexture.createView()
+                },
+                {
+                    binding: 4,
+                    resource: this.colormapTexture.createView()
+                },
+                {
+                    binding: 5,
+                    resource: this.sampler
+                },
+                // Updated each frame because we need to ping pong the accumulation buffers
+                // TODO: Possibly change to null
+                {
+                    binding: 6,
+                    resource: this.accumBufferViews[0]
+                },
+                {
+                    binding: 7,
+                    resource: this.accumBufferViews[1]
+                }*/
             ]
         });
     }
