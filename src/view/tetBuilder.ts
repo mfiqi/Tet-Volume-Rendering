@@ -9,8 +9,8 @@ export class TetBuilder {
     colorBufferLayout: GPUVertexBufferLayout;
 
     constructor(device: GPUDevice) {
-        var tet1: TetMesh = new TetMesh(0);
-        var tet2: TetMesh = new TetMesh(1);
+        var tet1: TetMesh = new TetMesh(0,undefined);
+        var tet2: TetMesh = new TetMesh(1,tet1);
         this.createColorBuffer(device, 2);
         this.createVertexBuffer(device, tet1, tet2);
         this.createIndexBuffer(device, 2);
