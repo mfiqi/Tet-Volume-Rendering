@@ -10,21 +10,28 @@ export class TetMesh {
     
     /* Vertices of the current tetrahedron */
     tetVertices: Float32Array;
+    previousTet: TetMesh;
 
-    constructor(tetID: number) {
+    constructor(tetID: number, previousTet: TetMesh) {
         this.tetID = tetID;
+        this.previousTet = previousTet;
         this.createTetVertices();
     }
 
     /* Possibly todo: Create tet based on nieghbor verts */
     createTetVertices() {
-        this.tetVertices = new Float32Array(
-            [
-                0, 0, 1,      
-                1, 0, 1,      
-                0.5, 1, 0.5,  
-                0.5, 0, 0    
-            ]
-        );
+        /* First tet gets initial verts*/
+        if (this.previousTet == null) {
+            this.tetVertices = new Float32Array(
+                [
+                    0.5, 0.5, 0.5,      
+                    -0.5, -0.5, 0.5,      
+                    -0.5, 0.5, -0.5,  
+                    0.5, -0.5, -0.5    
+                ]
+            );
+        } else {
+            this.tetVertices = this.previousTet.tetVertices;
+        }
     }
 }

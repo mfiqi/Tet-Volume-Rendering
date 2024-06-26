@@ -291,11 +291,12 @@ export class Renderer {
 
         renderpass.setPipeline(this.pipeline);
         renderpass.setVertexBuffer(0, this.tetMesh.vertexBuffer);
+        renderpass.setVertexBuffer(1, this.tetMesh.colorBuffer);
         renderpass.setIndexBuffer(this.tetMesh.indexBuffer, "uint16");
         renderpass.setBindGroup(0, this.bindGroup);
         renderpass.drawIndexed(
             //12*3, // vertices per cube
-            4*3, // vertices per cube
+            8*3, // vertices per cube
             1, 0, 0
         );
         renderpass.end();

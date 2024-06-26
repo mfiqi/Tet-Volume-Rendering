@@ -11,8 +11,8 @@ export class Scene {
     light: Light;
 
     constructor() {
-        this.cube = new Cube([-1,0,0], 0);
-        this.camera = new Camera([-1,2,2], 0, 0);
+        this.cube = new Cube([0,0,0], 0);
+        this.camera = new Camera([-2,-1,3], 0, 0);
         this.light = new Light([2, 2, 2]);
     }
 
