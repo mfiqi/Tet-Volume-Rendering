@@ -10,11 +10,11 @@ export class TetMesh {
     
     /* Vertices of the current tetrahedron */
     tetVertices: Float32Array;
-    previousTet: TetMesh;
+    previousTetVerts: Float32Array;
 
-    constructor(tetID: number, previousTet: TetMesh) {
+    constructor(tetID: number, previousTetVerts: Float32Array) {
         this.tetID = tetID;
-        this.previousTet = previousTet;
+        this.previousTetVerts = previousTetVerts;
         this.createTetVertices();
     }
 
@@ -30,11 +30,11 @@ export class TetMesh {
                     0.5, -0.5, -0.5    
                 ]
             );
-        } else {
-            this.tetVertices = this.previousTet.tetVertices;
-            this.tetVertices[9] *= -1;
-            this.tetVertices[10] *= -1;
-            this.tetVertices[11] *= -1;
+        } else if (this.tetID == 1) {
+            this.tetVertices = this.previousTetVerts.slice(0);
+            this.tetVertices[9] = -1;
+            this.tetVertices[10] = 1;
+            this.tetVertices[11] = 1;
         }
     }
 }

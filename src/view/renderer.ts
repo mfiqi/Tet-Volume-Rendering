@@ -296,7 +296,7 @@ export class Renderer {
         renderpass.setBindGroup(0, this.bindGroup);
         renderpass.drawIndexed(
             //12*3, // vertices per cube
-            8*3, // vertices per cube
+            4*3 * 2, // vertices per cube, last one is number of tets
             1, 0, 0
         );
         renderpass.end();

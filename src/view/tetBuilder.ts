@@ -9,28 +9,18 @@ export class TetBuilder {
     colorBufferLayout: GPUVertexBufferLayout;
 
     constructor(device: GPUDevice) {
-        var tet1: TetMesh = new TetMesh(0,undefined);
-        var tet2: TetMesh = new TetMesh(1,tet1);
+        var tet1: TetMesh = new TetMesh(0,new Float32Array);
+        var tet2: TetMesh = new TetMesh(1,tet1.tetVertices);
         this.createColorBuffer(device, 2);
         this.createVertexBuffer(device, tet1, tet2);
         this.createIndexBuffer(device, 2);
     }
 
     createColorBuffer(device: GPUDevice, numOfTets: number) {
-
-        const colors: Float32Array = new Float32Array(
-            [
-                1,0,0,
-                0,1,0,
-                0,0,1,
-                1,0,1 
-            ]
-        );
-
         var tetColors: Float32Array = new Float32Array(12*numOfTets);
         /* Colors of the vertices */
-        for (let index = 0; index < numOfTets; index++) {
-            tetColors.set(colors, index*12);
+        for (let index = 0; index < numOfTets*12; index++) {
+            tetColors[index] = Math.random();
         }
 
         console.log("Colors: ", tetColors);
