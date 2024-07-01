@@ -60,6 +60,8 @@ export class Renderer {
     async Initialize() {
         await this.setupDevice();
 
+        await this.readPLYMesh();
+
         await this.createAssets();
 
         this.clearColor = 0.0;
@@ -70,6 +72,34 @@ export class Renderer {
         await this.makePipeline();
 
         await this.makeBindGroups();
+    }
+
+    async readPLYMesh() {
+        var PLY_Mesh: string = "dist/data/monkey_tet.ply";
+
+        const response = await fetch(PLY_Mesh);
+    
+        var reader: ReadableStreamDefaultReader<Uint8Array>;
+        if (response.body != undefined) {
+            reader = response.body.getReader();
+        
+            var receivedSize = 0;
+            var buf = new Uint8Array(volumeSize);
+            while (true) {
+                var result = await reader.read();
+                if (result?.done) {
+                    break;
+                }
+                var value = result?.value;
+                buf.set(value, receivedSize);
+            }
+            
+            console.log("Successfully fetched volume!");
+            return buf;
+        } else {
+            console.log("ERROR: fetchVolume() in volume.ts");
+            process.exit();
+        }
     }
 
     async setupDevice() {
