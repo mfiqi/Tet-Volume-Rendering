@@ -9,6 +9,8 @@ import { Deg2Rad } from "../model/math";
 import { Light } from "../model/light";
 import { linearToSRGB } from "./volume";
 
+import axios from 'axios';
+
 /* Source */
 import { uploadImage, fetchVolume, uploadVolume } from "./volume";
 import { TetBuilder } from "./tetBuilder";
@@ -75,30 +77,25 @@ export class Renderer {
     }
 
     async readPLYMesh() {
-        var PLY_Mesh: string = "dist/data/monkey_tet.ply";
+        const fileUrl = 'https://raw.githubusercontent.com/mfiqi/mfiqi.github.io/Tetrahedral-Structure/dist/data/monkey_tet.ply';
+        this.readPlyFile(fileUrl);
+    }
 
-        const response = await fetch(PLY_Mesh);
+    async readPlyFile(url: string): Promise<void> {
+        try {
+            const response = await axios.get(url);
+            const fileContent = response.data;
     
-        var reader: ReadableStreamDefaultReader<Uint8Array>;
-        if (response.body != undefined) {
-            reader = response.body.getReader();
-        
-            var receivedSize = 0;
-            var buf = new Uint8Array(volumeSize);
-            while (true) {
-                var result = await reader.read();
-                if (result?.done) {
-                    break;
-                }
-                var value = result?.value;
-                buf.set(value, receivedSize);
-            }
+            // Split the file content by new lines
+            const lines = fileContent.split('\n');
             
-            console.log("Successfully fetched volume!");
-            return buf;
-        } else {
-            console.log("ERROR: fetchVolume() in volume.ts");
-            process.exit();
+            // Process each line
+            for (const line of lines) {
+                console.log(line);
+                // Add your line processing logic here
+            }
+        } catch (error) {
+            console.error('Error reading the file:', error);
         }
     }
 
