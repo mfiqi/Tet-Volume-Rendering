@@ -109,6 +109,8 @@ export class Renderer {
             size: 64 * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
+
+        TetrahedralMesh.createTetBuffers(this.device);
     }
 
     async makeDepthBufferResources() {
@@ -160,6 +162,22 @@ export class Renderer {
                     binding: 0,
                     visibility: GPUShaderStage.VERTEX,
                     buffer: {}
+                },
+                {
+                    binding: 1,
+                    visibility: GPUShaderStage.VERTEX,
+                    buffer: {
+                        type: "read-only-storage",
+                        hasDynamicOffset: false
+                    }
+                },
+                {
+                    binding: 2,
+                    visibility: GPUShaderStage.VERTEX,
+                    buffer: {
+                        type: "read-only-storage",
+                        hasDynamicOffset: false
+                    }
                 }
             ]
         });
@@ -216,6 +234,18 @@ export class Renderer {
                     binding: 0,
                     resource: {
                         buffer: this.transformBuffer
+                    },
+                },
+                {
+                    binding: 1,
+                    resource: {
+                        buffer: TetrahedralMesh.tetVertsBuffer
+                    },
+                },
+                {
+                    binding: 2,
+                    resource: {
+                        buffer: TetrahedralMesh.tetIndicesBuffer
                     },
                 }
             ]
@@ -284,6 +314,9 @@ export class Renderer {
         this.device.queue.writeBuffer(this.transformBuffer, 64, <ArrayBuffer>view);
         this.device.queue.writeBuffer(this.transformBuffer, 128, <ArrayBuffer>projection);
         this.device.queue.writeBuffer(this.transformBuffer, 192, <ArrayBuffer>normal);
+
+        this.device.queue.writeBuffer(TetrahedralMesh.tetVertsBuffer, 0, <ArrayBuffer>TetrahedralMesh.tetVertices);
+        this.device.queue.writeBuffer(TetrahedralMesh.tetIndicesBuffer, 0, <ArrayBuffer>TetrahedralMesh.tetIndices);
 
         //command encoder: records draw commands for submission
         const commandEncoder : GPUCommandEncoder = this.device.createCommandEncoder();

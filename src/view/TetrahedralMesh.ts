@@ -3,12 +3,27 @@ import axios from "axios";
 export class TetrahedralMesh {
 
     static tetVertices: Float32Array;
-    static tetIndices: Uint16Array;
+    static tetIndices: Uint32Array;
+
+    static tetVertsBuffer: GPUBuffer;
+    static tetIndicesBuffer: GPUBuffer;
+
+    static async createTetBuffers(device: GPUDevice) {
+        this.tetVertsBuffer = device.createBuffer({
+            size: 1000 * 3 * 4, // 395 verts * 3 points per vert * 4 bytes
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+        });
+
+        this.tetIndicesBuffer = device.createBuffer({
+            size: 1200 * 4 * 4,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+        });
+    }
 
     /* Reads tet mesh file */
     static async readTetMeshFile(url: string): Promise<void> {
         this.tetVertices = new Float32Array(0);
-        this.tetIndices = new Uint16Array(0);
+        this.tetIndices = new Uint32Array(0);
 
         try {
             const response = await axios.get(url);
@@ -56,9 +71,9 @@ export class TetrahedralMesh {
     static addToTetIndices(line: any) {
         const matches = line.match(/\d+/g);
         const numbers = matches ? matches.map(Number) : [];
-        const uint16Array = new Uint16Array(numbers);
+        const uint16Array = new Uint32Array(numbers);
 
-        const tempArray = new Uint16Array(this.tetIndices.length + 4);
+        const tempArray = new Uint32Array(this.tetIndices.length + 4);
         tempArray.set(this.tetIndices);
         tempArray.set(uint16Array, this.tetIndices.length);
         this.tetIndices = tempArray;

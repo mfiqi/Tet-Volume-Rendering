@@ -20,9 +20,18 @@ struct TransformData {
     normal: mat4x4<f32>
 };
 
+struct TetVertices {
+    tetVerts: array<f32>
+};
 
+struct TetIndices {
+    tetIndices: array<u32>
+};
 
 @binding(0) @group(0) var<uniform> transform: TransformData;
+
+@binding(1) @group(0) var<storage, read> tetVerts: TetVertices;
+@binding(2) @group(0) var<storage, read> tetIndices: TetIndices;
 
 @vertex
 fn vs_main(vertexInput: VertexInput) -> VertexOutput
