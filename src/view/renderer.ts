@@ -14,6 +14,7 @@ import axios from 'axios';
 /* Source */
 import { uploadImage, fetchVolume, uploadVolume } from "./volume";
 import { TetBuilder } from "./tetBuilder";
+import { TetrahedralMesh } from "./TetrahedralMesh";
 
 export class Renderer {
 
@@ -55,6 +56,8 @@ export class Renderer {
 
     tetMesh: TetBuilder;
 
+    tetrahedralMesh: TetrahedralMesh;
+
     constructor(canvas: HTMLCanvasElement){
         this.canvas = canvas;
     }
@@ -77,26 +80,8 @@ export class Renderer {
     }
 
     async readPLYMesh() {
-        const fileUrl = 'https://raw.githubusercontent.com/mfiqi/mfiqi.github.io/Tetrahedral-Structure/dist/data/monkey_tet.ply';
-        this.readPlyFile(fileUrl);
-    }
-
-    async readPlyFile(url: string): Promise<void> {
-        try {
-            const response = await axios.get(url);
-            const fileContent = response.data;
-    
-            // Split the file content by new lines
-            const lines = fileContent.split('\n');
-            
-            // Process each line
-            for (const line of lines) {
-                console.log(line);
-                // Add your line processing logic here
-            }
-        } catch (error) {
-            console.error('Error reading the file:', error);
-        }
+        const fileUrl = 'https://raw.githubusercontent.com/mfiqi/mfiqi.github.io/Tetrahedral-Structure/dist/data/tetmesh.txt';
+        TetrahedralMesh.readTetMeshFile(fileUrl);
     }
 
     async setupDevice() {

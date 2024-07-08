@@ -23,8 +23,6 @@ export class TetBuilder {
             tetColors[index] = Math.random();
         }
 
-        console.log("Colors: ", tetColors);
-
         //VERTEX: the buffer can be used as a vertex buffer
         //COPY_DST: data can be copied to the buffer
         const usage: GPUBufferUsageFlags = GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST;
@@ -62,8 +60,6 @@ export class TetBuilder {
         let tetVerts = new Float32Array(tet1.tetVertices.length + tet2.tetVertices.length);
         tetVerts.set(tet1.tetVertices);
         tetVerts.set(tet2.tetVertices,tet1.tetVertices.length);
-
-        console.log("TetVerts: ", tetVerts);
 
         const descriptor: GPUBufferDescriptor = {
             size: tetVerts.byteLength,
@@ -106,9 +102,6 @@ export class TetBuilder {
             );
             tetIndices.set(indices,i*12);         
         }
-
-        
-        console.log("Indices: ", tetIndices);
 
         this.indexBuffer = device.createBuffer({
             size: tetIndices.byteLength,
