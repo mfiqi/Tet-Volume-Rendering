@@ -18,10 +18,10 @@ export class Scene {
 
     update(rotate_cube: boolean) {
         this.cube.update(rotate_cube);
-        //this.camera.update();
+        this.camera.update();
     }
 
-    /*spin_camera(dX: number, dY: number) {
+    spin_camera(dX: number, dY: number) {
         this.camera.eulers[2] -= dX;
         this.camera.eulers[2] %= 360;
 
@@ -46,8 +46,7 @@ export class Scene {
             this.camera.right,
             right_amount
         );
-    }*/
-
+    }
     get_camera(): Camera {
         return this.camera;
     }

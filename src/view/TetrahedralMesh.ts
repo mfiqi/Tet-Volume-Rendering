@@ -107,9 +107,9 @@ export class TetrahedralMesh {
         const matches = line.match(regex);
         const values = matches.map(Number);
 
-        values[0] /= -200;
-        values[1] /= -200;
-        values[2] /= -200;
+        values[0] /= -10;
+        values[1] /= -10;
+        values[2] /= -10;
 
         const newFloat32Array = new Float32Array(this.tetVertices.length + 3);
         newFloat32Array.set(this.tetVertices);

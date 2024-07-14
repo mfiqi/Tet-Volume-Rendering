@@ -31,7 +31,7 @@ export class Camera {
         mat4.lookAt(this.view, this.position, [0.5,0.5,0.5], this.up);
     }
 
-    /*update() {
+    update() {
         this.forwards = [
             Math.cos(Deg2Rad(this.eulers[2])) * Math.cos(Deg2Rad(this.eulers[1])),
             Math.sin(Deg2Rad(this.eulers[2])) * Math.cos(Deg2Rad(this.eulers[1])),
@@ -46,7 +46,7 @@ export class Camera {
         vec3.add(target, this.position, this.forwards);
         this.view = mat4.create();
         mat4.lookAt(this.view, this.position, target, this.up);
-    }*/
+    }
 
     get_view(): mat4 {
         return this.view;
