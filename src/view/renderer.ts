@@ -65,7 +65,7 @@ export class Renderer {
     async Initialize() {
         await this.setupDevice();
 
-        await this.readPLYMesh();
+        await this.readTetMesh();
 
         await this.createAssets();
 
@@ -79,9 +79,12 @@ export class Renderer {
         await this.makeBindGroups();
     }
 
-    async readPLYMesh() {
+    async readTetMesh() {
         const fileUrl = 'https://raw.githubusercontent.com/mfiqi/mfiqi.github.io/Tetrahedral-Structure/dist/data/tetmesh.txt';
-        TetrahedralMesh.readTetMeshFile(fileUrl);
+
+        await TetrahedralMesh.readTetMeshFile(fileUrl);
+        TetrahedralMesh.createSurfaceIndices(this.device);
+        TetrahedralMesh.createTetColors(this.device);
     }
 
     async setupDevice() {
@@ -335,13 +338,14 @@ export class Renderer {
         });
 
         renderpass.setPipeline(this.pipeline);
-        renderpass.setVertexBuffer(0, this.tetMesh.vertexBuffer);
-        renderpass.setVertexBuffer(1, this.tetMesh.colorBuffer);
-        renderpass.setIndexBuffer(this.tetMesh.indexBuffer, "uint16");
+        renderpass.setVertexBuffer(0, TetrahedralMesh.tetVertsBuffer);
+        renderpass.setVertexBuffer(1, TetrahedralMesh.tetColorBuffer);
+        renderpass.setIndexBuffer(TetrahedralMesh.tetSurfaceIndexBuffer, "uint32");
         renderpass.setBindGroup(0, this.bindGroup);
         renderpass.drawIndexed(
             //12*3, // vertices per cube
-            4*3 * 2, // vertices per cube, last one is number of tets
+            TetrahedralMesh.tetSurfaceIndices.length,
+            //4*3 * 2, // vertices per cube, last one is number of tets
             1, 0, 0
         );
         renderpass.end();
