@@ -10,7 +10,7 @@ struct VertexOutput {
     @builtin(position) Position : vec4<f32>,
     @location(0) ray_direction : vec3<f32>,
     @location(1) eyePosition : vec3<f32>,
-    @location(2) color : vec3<f32>
+    @location(2) @interpolate(flat) color : vec3<f32>
 };
 
 struct TransformData {

@@ -3,7 +3,7 @@ struct FragmentInput {
     @location(0) ray_direction : vec3<f32>,
     @location(1) eyePosition : vec3<f32>,
     //@location(1) @interpolate(flat) eyePosition : vec3<f32>,
-    @location(2) color : vec3<f32>
+    @location(2) @interpolate(flat) color : vec3<f32>
 };
 
 // @group(0) @binding(3) var volume: texture_3d<f32>;
