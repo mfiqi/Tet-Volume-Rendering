@@ -1,5 +1,7 @@
 import vertexShader from "./shaders/vertex.wgsl";
 import fragmentShader from "./shaders/fragment.wgsl";
+import computeShader from "./shaders/compute.wgsl"
+
 import { RenderData } from "../model/definitions";
 import { CubeMesh } from "./cubeMesh";
 import { TetMesh } from "./tetMesh";
@@ -28,7 +30,12 @@ export class Renderer {
 
     // Pipeline objects
     pipeline: GPURenderPipeline;
+    bindGroup: GPUBindGroup;
     bindGroupLayout: GPUBindGroupLayout;
+
+    compute_pipeline: GPUComputePipeline;
+    compute_bindGroup: GPUBindGroup;
+    compute_layout: GPUBindGroupLayout;
 
     // Depth Stencil stuff 
     depthStencilState: GPUDepthStencilState;
@@ -38,7 +45,6 @@ export class Renderer {
 
     // Assets
     cubeMesh: CubeMesh;
-    bindGroup: GPUBindGroup;
     transformBuffer: GPUBuffer;
     volumeBuffer: GPUBuffer;
     lightBuffer: GPUBuffer;
@@ -157,8 +163,7 @@ export class Renderer {
         };
     }
 
-    async makePipeline() {
-        
+    async makePipeline() {    
         this.bindGroupLayout = this.device.createBindGroupLayout({
             entries: [
                 {
@@ -185,8 +190,41 @@ export class Renderer {
             ]
         });
 
+        this.compute_layout = this.device.createBindGroupLayout({
+            entries: [
+                {
+                    binding: 0,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: "read-only-storage",
+                        hasDynamicOffset: false
+                    }
+                },
+                {
+                    binding: 1,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: "read-only-storage",
+                        hasDynamicOffset: false
+                    }
+                },
+                {
+                    binding: 2,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: "storage",
+                        hasDynamicOffset: false
+                    }
+                }
+            ]
+        });
+
         const pipelineLayout = this.device.createPipelineLayout({
             bindGroupLayouts: [this.bindGroupLayout]
+        });
+
+        const compute_pipeline_layout = this.device.createPipelineLayout({
+            bindGroupLayouts: [this.compute_layout]
         });
 
         this.pipeline = this.device.createRenderPipeline({
@@ -217,15 +255,23 @@ export class Renderer {
                 }]
             },
             
-            // TODO: Potentially change to triangle-strip
             primitive : {
                 topology : "triangle-list",
-                // Possibly remove if everything works, but there are visual errors
                 //cullMode: "front" 
             },
     
             layout: pipelineLayout,
             depthStencil: this.depthStencilState,
+        });
+
+        this.compute_pipeline = this.device.createComputePipeline({
+            compute : {
+                module : this.device.createShaderModule({
+                    code : computeShader
+                }),
+                entryPoint : "cs_main"
+            },
+            layout : compute_pipeline_layout
         });
     }
 
@@ -250,6 +296,30 @@ export class Renderer {
                     resource: {
                         buffer: TetrahedralMesh.tetIndicesBuffer
                     },
+                }
+            ]
+        });
+
+        this.compute_bindGroup = this.device.createBindGroup({
+            layout: this.compute_layout,
+            entries: [
+                {
+                    binding: 0,
+                    resource: {
+                        buffer: TetrahedralMesh.tetVertsBuffer
+                    },
+                },
+                {
+                    binding: 1,
+                    resource: {
+                        buffer: TetrahedralMesh.tetIndicesBuffer
+                    },
+                },
+                {
+                    binding: 2,
+                    resource: {
+                        buffer: TetrahedralMesh.tetShellBuffer
+                    }
                 }
             ]
         });
@@ -296,14 +366,10 @@ export class Renderer {
     }
 
     async render(renderables: RenderData) {
-        
         //Early exit tests
         if (!this.device || !this.pipeline) {
             return;
         }
-
-        //bindGroupEntries[4].resource = accumBufferViews[frameId % 2];
-        //bindGroupEntries[5].resource = accumBufferViews[(frameId + 1) % 2];
 
         /* Gets Transforms */
         const model = renderables.model_transform;

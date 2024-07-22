@@ -12,6 +12,8 @@ export class TetrahedralMesh {
     static tetSurfaceIndexBuffer: GPUBuffer;
     static tetColorBuffer: GPUBuffer;
 
+    static tetShellBuffer: GPUBuffer;
+
     static async createTetBuffers(device: GPUDevice) {
         this.tetVertsBuffer = device.createBuffer({
             size: 1000 * 3 * 4, // 395 verts * 3 points per vert * 4 bytes
@@ -21,6 +23,12 @@ export class TetrahedralMesh {
         this.tetIndicesBuffer = device.createBuffer({
             size: 1200 * 4 * 4,
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+        });
+
+        this.tetShellBuffer = this.tetIndicesBuffer = device.createBuffer({
+            size: 1200 * 4 * 4,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
+            label: "TetShellBuffer"
         });
     }
 
