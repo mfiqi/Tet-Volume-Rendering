@@ -389,6 +389,12 @@ export class Renderer {
 
         //command encoder: records draw commands for submission
         const commandEncoder : GPUCommandEncoder = this.device.createCommandEncoder();
+
+        /*const computePass : GPUComputePassEncoder = commandEncoder.beginComputePass();
+        computePass.setPipeline(this.compute_pipeline);
+        computePass.setBindGroup(0, this.compute_bindGroup);
+        computePass.dispatchWorkgroups(1,1,1);
+        computePass.end();*/
         
         //texture view: image view to the color buffer in this case
         const textureView : GPUTextureView = this.context.getCurrentTexture().createView();

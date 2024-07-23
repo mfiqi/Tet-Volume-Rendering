@@ -60,9 +60,9 @@ export class App {
             this.scene.get_renderables()
         );
         
-        // if (running) {
-        //     requestAnimationFrame(this.run);
-        // }
+        if (running) {
+            requestAnimationFrame(this.run);
+        }
     }
 
     handle_keypress(event: JQuery.KeyDownEvent) {
