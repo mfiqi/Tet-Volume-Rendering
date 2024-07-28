@@ -91,6 +91,7 @@ export class Renderer {
         await TetrahedralMesh.readTetMeshFile(fileUrl);
         TetrahedralMesh.createSurfaceIndices(this.device);
         TetrahedralMesh.createTetColors(this.device);
+        TetrahedralMesh.extractShell(this.device);
     }
 
     async setupDevice() {

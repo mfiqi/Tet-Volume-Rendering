@@ -13,6 +13,61 @@ export class TetrahedralMesh {
     static tetColorBuffer: GPUBuffer;
 
     static tetShellBuffer: GPUBuffer;
+    static tetShellIndices: Uint32Array;
+
+    /* Keys = Faces | Values = TetIDs */
+    static faceTetMap: Map<Uint32Array,Uint32Array>;
+
+    static extractShell(device: GPUDevice) {
+        this.tetShellIndices = new Uint32Array(0);
+        /* Iterates through every face */
+        for (let i = 0; i < this.tetSurfaceIndices.length; i+=3) {
+            // Gets face indices
+            var faceIndices: Uint32Array = this.tetSurfaceIndices.subarray(i,i+3);
+
+            var numberOfTets: number = 0;
+
+            /* Iterates through every tetrahedron */
+            for (let j = 0; j < this.tetIndices.length; j+=4) {
+                var index1: number = this.tetIndices[j];
+                var index2: number = this.tetIndices[j+1];
+                var index3: number = this.tetIndices[j+2];
+                var index4: number = this.tetIndices[j+3];
+
+                var face1 = new Uint32Array([index1,index2,index3]);
+                var face2 = new Uint32Array([index2,index3,index4]);
+                var face3 = new Uint32Array([index3,index4,index1]);
+                var face4 = new Uint32Array([index4,index1,index2]);
+                
+                if (this.compareUint32Arrays(faceIndices,face1) ||
+                    this.compareUint32Arrays(faceIndices,face2) ||
+                    this.compareUint32Arrays(faceIndices,face3) ||
+                    this.compareUint32Arrays(faceIndices,face4)) {
+                        numberOfTets++;
+                        if (numberOfTets == 2) break;
+                }
+            }
+
+            /* If numberOfTets == 1, then the face is part of the shell*/
+            if (numberOfTets == 1) {
+                /* Copy face to global array */
+                const tempArr = new Uint32Array(this.tetShellIndices.length + 3);
+                tempArr.set(this.tetShellIndices);
+                tempArr.set(faceIndices, this.tetShellIndices.length);
+                this.tetShellIndices = tempArr;
+            }
+            console.log(numberOfTets);
+        }
+        // console.log(this.tetShellIndices);
+        // console.log(this.tetSurfaceIndices);
+    }
+
+    static compareUint32Arrays(arr1: Uint32Array, arr2: Uint32Array): boolean {
+        for (let i = 0; i < arr1.length; i++) {
+            if (arr1[i] != arr2[i]) return false;
+        }
+        return true;
+    }
 
     static async createTetBuffers(device: GPUDevice) {
         this.tetVertsBuffer = device.createBuffer({
