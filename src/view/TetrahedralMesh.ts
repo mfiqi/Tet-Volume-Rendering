@@ -18,48 +18,62 @@ export class TetrahedralMesh {
     /* Keys = Faces | Values = TetIDs */
     static faceTetMap: Map<Uint32Array,Uint32Array>;
 
+    /* TODO: Rewrite this function entirely to make it more understandable */
     static extractShell(device: GPUDevice) {
-        this.tetShellIndices = new Uint32Array(0);
-        /* Iterates through every face */
-        for (let i = 0; i < this.tetSurfaceIndices.length; i+=3) {
-            // Gets face indices
-            var faceIndices: Uint32Array = this.tetSurfaceIndices.subarray(i,i+3);
-
-            var numberOfTets: number = 0;
-
-            /* Iterates through every tetrahedron */
-            for (let j = 0; j < this.tetIndices.length; j+=4) {
-                var index1: number = this.tetIndices[j];
-                var index2: number = this.tetIndices[j+1];
-                var index3: number = this.tetIndices[j+2];
-                var index4: number = this.tetIndices[j+3];
-
-                var face1 = new Uint32Array([index1,index2,index3]);
-                var face2 = new Uint32Array([index2,index3,index4]);
-                var face3 = new Uint32Array([index3,index4,index1]);
-                var face4 = new Uint32Array([index4,index1,index2]);
-                
-                if (this.compareUint32Arrays(faceIndices,face1) ||
-                    this.compareUint32Arrays(faceIndices,face2) ||
-                    this.compareUint32Arrays(faceIndices,face3) ||
-                    this.compareUint32Arrays(faceIndices,face4)) {
-                        numberOfTets++;
-                        if (numberOfTets == 2) break;
+        // Use a dynamic array to collect shell faces
+        const shellIndices: number[] = [];
+    
+        // Track face occurrences using a map
+        const faceMap: Map<string, number> = new Map();
+    
+        // Function to generate a sorted key for each face
+        const generateFaceKey = (face: Uint32Array): string => {
+            return face.slice().sort((a, b) => a - b).join('-');
+        };
+    
+        // Iterate through every tetrahedron
+        for (let j = 0; j < this.tetIndices.length; j += 4) {
+            const faces = [
+                new Uint32Array([this.tetIndices[j], this.tetIndices[j + 1], this.tetIndices[j + 2]]),
+                new Uint32Array([this.tetIndices[j + 1], this.tetIndices[j + 2], this.tetIndices[j + 3]]),
+                new Uint32Array([this.tetIndices[j + 2], this.tetIndices[j + 3], this.tetIndices[j]]),
+                new Uint32Array([this.tetIndices[j + 3], this.tetIndices[j], this.tetIndices[j + 1]])
+            ];
+    
+            for (const face of faces) {
+                const key = generateFaceKey(face);
+                if (faceMap.has(key)) {
+                    // Increment face count if already exists
+                    faceMap.set(key, faceMap.get(key)! + 1);
+                } else {
+                    // Otherwise, add it with an initial count of 1
+                    faceMap.set(key, 1);
                 }
             }
-
-            /* If numberOfTets == 1, then the face is part of the shell*/
-            if (numberOfTets == 1) {
-                /* Copy face to global array */
-                const tempArr = new Uint32Array(this.tetShellIndices.length + 3);
-                tempArr.set(this.tetShellIndices);
-                tempArr.set(faceIndices, this.tetShellIndices.length);
-                this.tetShellIndices = tempArr;
-            }
-            console.log(numberOfTets);
         }
-        // console.log(this.tetShellIndices);
-        // console.log(this.tetSurfaceIndices);
+    
+        // Filter out the boundary faces
+        faceMap.forEach((count, key) => {
+            if (count === 1) {
+                const indices = key.split('-').map(Number);
+                shellIndices.push(...indices);
+            }
+        });
+    
+        // Convert dynamic array to Uint32Array
+        this.tetShellIndices = new Uint32Array(shellIndices);
+
+        console.log(this.tetShellIndices);
+        console.log(this.tetSurfaceIndices);
+
+        this.tetShellBuffer = device.createBuffer({
+            size: this.tetShellIndices.byteLength,
+            usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+            mappedAtCreation: true
+        });
+
+        new Uint32Array(this.tetShellBuffer.getMappedRange()).set(this.tetShellIndices);
+        this.tetShellBuffer.unmap();
     }
 
     static compareUint32Arrays(arr1: Uint32Array, arr2: Uint32Array): boolean {
@@ -78,12 +92,6 @@ export class TetrahedralMesh {
         this.tetIndicesBuffer = device.createBuffer({
             size: 1200 * 4 * 4,
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
-        });
-
-        this.tetShellBuffer = this.tetIndicesBuffer = device.createBuffer({
-            size: 1200 * 4 * 4,
-            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
-            label: "TetShellBuffer"
         });
     }
 

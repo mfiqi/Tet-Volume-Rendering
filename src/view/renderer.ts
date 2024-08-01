@@ -208,7 +208,7 @@ export class Renderer {
                         type: "read-only-storage",
                         hasDynamicOffset: false
                     }
-                },
+                }/*,
                 {
                     binding: 2,
                     visibility: GPUShaderStage.COMPUTE,
@@ -216,7 +216,7 @@ export class Renderer {
                         type: "storage",
                         hasDynamicOffset: false
                     }
-                }
+                }*/
             ]
         });
 
@@ -316,12 +316,12 @@ export class Renderer {
                         buffer: TetrahedralMesh.tetIndicesBuffer
                     },
                 },
-                {
+                /*{
                     binding: 2,
                     resource: {
                         buffer: TetrahedralMesh.tetShellBuffer
                     }
-                }
+                }*/
             ]
         });
     }
@@ -413,11 +413,11 @@ export class Renderer {
         renderpass.setPipeline(this.pipeline);
         renderpass.setVertexBuffer(0, TetrahedralMesh.tetVertsBuffer);
         renderpass.setVertexBuffer(1, TetrahedralMesh.tetColorBuffer);
-        renderpass.setIndexBuffer(TetrahedralMesh.tetSurfaceIndexBuffer, "uint32");
+        renderpass.setIndexBuffer(TetrahedralMesh.tetShellBuffer, "uint32");
         renderpass.setBindGroup(0, this.bindGroup);
         renderpass.drawIndexed(
             //12*3, // vertices per cube
-            TetrahedralMesh.tetSurfaceIndices.length,
+            TetrahedralMesh.tetShellIndices.length,
             //4*3 * 2, // vertices per cube, last one is number of tets
             1, 0, 0
         );

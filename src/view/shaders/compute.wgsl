@@ -13,7 +13,7 @@ struct TetTriangleIndices {
 @binding(1) @group(0) var<storage, read> tetTriangleIndices: TetTriangleIndices;
 
 // Results will be written to this array
-@binding(2) @group(0) var<storage, read_write> shell: array<u32>;
+// @binding(2) @group(0) var<storage, read_write> shell: array<u32>;
 
 // Extract the shell of the mesh to this
 @compute @workgroup_size(1, 1, 1) 
