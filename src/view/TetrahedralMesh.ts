@@ -18,6 +18,35 @@ export class TetrahedralMesh {
     /* Keys = Faces | Values = TetIDs */
     static faceTetMap: Map<Uint32Array,Uint32Array>;
 
+    
+    static vertexBufferLayout: GPUVertexBufferLayout;
+    static colorBufferLayout: GPUVertexBufferLayout;
+    static cameraPosition: GPUVertexBufferLayout;
+
+    static createBufferLayout() {
+        this.vertexBufferLayout = {
+            arrayStride: 12,
+            attributes: [
+                // Position
+                {
+                    shaderLocation: 0,
+                    format: "float32x3",
+                    offset: 0
+                }
+            ]
+        }
+        this.colorBufferLayout = {
+            arrayStride: 12,
+            attributes: [
+                {
+                    shaderLocation: 1,
+                    format: "float32x3",
+                    offset: 0
+                }
+            ]
+        }
+    }
+
     /* TODO: Rewrite this function entirely to make it more understandable */
     static extractShell(device: GPUDevice) {
         // Use a dynamic array to collect shell faces

@@ -1,0 +1,6 @@
+1. Use ray triangle intersection to determine if a ray intersects a triangle.
+2. Use Barcyentric coordinates to determine the color at that specific point. 
+3. Find the tet that the triangle belongs to. 
+4. Determine the new entrance point by performing the ray triangle intersection.
+5. Repeat steps 1 through 4 until exit.
+6. Accumulate color along the way.

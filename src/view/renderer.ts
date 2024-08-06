@@ -3,8 +3,6 @@ import fragmentShader from "./shaders/fragment.wgsl";
 import computeShader from "./shaders/compute.wgsl"
 
 import { RenderData } from "../model/definitions";
-import { CubeMesh } from "./cubeMesh";
-import { TetMesh } from "./tetMesh";
 import { ReadonlyVec3, mat4, vec4 } from "gl-matrix";
 import { vec3 } from "gl-matrix";
 import { Deg2Rad } from "../model/math";
@@ -15,7 +13,6 @@ import axios from 'axios';
 
 /* Source */
 import { uploadImage, fetchVolume, uploadVolume } from "./volume";
-import { TetBuilder } from "./tetBuilder";
 import { TetrahedralMesh } from "./TetrahedralMesh";
 
 export class Renderer {
@@ -44,7 +41,6 @@ export class Renderer {
     depthStencilAttachment: GPURenderPassDepthStencilAttachment;
 
     // Assets
-    cubeMesh: CubeMesh;
     transformBuffer: GPUBuffer;
     volumeBuffer: GPUBuffer;
     lightBuffer: GPUBuffer;
@@ -59,8 +55,6 @@ export class Renderer {
     accumBufferViews: GPUTextureView[];
     sampler: GPUSampler;
     clearColor: number;
-
-    tetMesh: TetBuilder;
 
     tetrahedralMesh: TetrahedralMesh;
 
@@ -112,11 +106,10 @@ export class Renderer {
     }
 
     async createAssets() {
-        this.cubeMesh = new CubeMesh(this.device);
-        this.tetMesh = new TetBuilder(this.device);
+        TetrahedralMesh.createBufferLayout();
 
         this.transformBuffer = this.device.createBuffer({
-            size: 64 * 4,
+            size: (64 * 4) + (4 * 4), // first is matrices, second is camera position
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
 
@@ -236,8 +229,8 @@ export class Renderer {
                 entryPoint : "vs_main",
                 buffers: 
                 [
-                    this.tetMesh.vertexBufferLayout,
-                    this.tetMesh.colorBufferLayout
+                    TetrahedralMesh.vertexBufferLayout,
+                    TetrahedralMesh.colorBufferLayout
                 ]
                 //buffers: [this.cubeMesh.vertexBufferLayout]
             },
@@ -384,7 +377,9 @@ export class Renderer {
         this.device.queue.writeBuffer(this.transformBuffer, 64, <ArrayBuffer>view);
         this.device.queue.writeBuffer(this.transformBuffer, 128, <ArrayBuffer>projection);
         this.device.queue.writeBuffer(this.transformBuffer, 192, <ArrayBuffer>normal);
-
+        
+        this.device.queue.writeBuffer(this.transformBuffer, 256, <ArrayBuffer>renderables.eye_position);
+        
         this.device.queue.writeBuffer(TetrahedralMesh.tetVertsBuffer, 0, <ArrayBuffer>TetrahedralMesh.tetVertices);
         this.device.queue.writeBuffer(TetrahedralMesh.tetIndicesBuffer, 0, <ArrayBuffer>TetrahedralMesh.tetIndices);
 

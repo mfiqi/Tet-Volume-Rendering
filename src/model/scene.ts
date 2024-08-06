@@ -55,7 +55,7 @@ export class Scene {
         return {
             view_transform: this.camera.get_view(),
             model_transform: this.cube.get_model(),
-            eye_position: this.camera.get_eye_position(),
+            eye_position: new Float32Array(this.camera.get_eye_position()),
             light: this.light
         };
     }
