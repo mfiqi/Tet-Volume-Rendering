@@ -7,12 +7,6 @@ struct FragmentInput {
     @location(3) @interpolate(flat) primitive_id : u32
 };
 
-// @group(0) @binding(3) var volume: texture_3d<f32>;
-// @group(0) @binding(4) var colormap: texture_2d<f32>;
-// @group(0) @binding(5) var tex_sampler: sampler;
-// @group(0) @binding(6) var accum_buffer_in: texture_2d<f32>;
-// @group(0) @binding(7) var accum_buffer: texture_storage_2d<rgba32float, write>;
-
 // Calculates ray box intersection
 fn intersect_box(origin: vec3<f32>, rayDir: vec3<f32>) -> vec2<f32>
 {
@@ -33,6 +27,26 @@ fn linear_to_srgb(x: f32) -> f32 {
 		return 12.92 * x;
 	}
 	return 1.055 * pow(x, 1.0 / 2.4) - 0.055;
+}
+
+// struct TetVertices {
+//     tetVerts: array<f32>
+// };
+// @binding(1) @group(0) var<storage, read> tetVerts: TetVertices;
+
+// Calculate normal vector
+fn nomral_vector() -> vec3<f32>{
+    return vec3<f32>(0.0,0.0,0.0);
+}
+
+// Does the ray intersect the plane defined by the triangle?
+fn ray_plane_intersection_test() {
+
+}
+
+// If so, does the intersection point fall within the triangle?
+fn ray_triangle_intersection_test() {
+    
 }
 
 @fragment

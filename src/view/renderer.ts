@@ -167,7 +167,7 @@ export class Renderer {
                 },
                 {
                     binding: 1,
-                    visibility: GPUShaderStage.VERTEX,
+                    visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
                     buffer: {
                         type: "read-only-storage",
                         hasDynamicOffset: false
@@ -288,7 +288,7 @@ export class Renderer {
                 {
                     binding: 2,
                     resource: {
-                        buffer: TetrahedralMesh.tetIndicesBuffer
+                        buffer: TetrahedralMesh.tetShellBuffer
                     },
                 }
             ]
@@ -381,7 +381,7 @@ export class Renderer {
         this.device.queue.writeBuffer(this.transformBuffer, 256, <ArrayBuffer>renderables.eye_position);
         
         this.device.queue.writeBuffer(TetrahedralMesh.tetVertsBuffer, 0, <ArrayBuffer>TetrahedralMesh.tetVertices);
-        this.device.queue.writeBuffer(TetrahedralMesh.tetIndicesBuffer, 0, <ArrayBuffer>TetrahedralMesh.tetIndices);
+        //this.device.queue.writeBuffer(TetrahedralMesh.tetIndicesBuffer, 0, <ArrayBuffer>TetrahedralMesh.tetIndices);
 
         //command encoder: records draw commands for submission
         const commandEncoder : GPUCommandEncoder = this.device.createCommandEncoder();

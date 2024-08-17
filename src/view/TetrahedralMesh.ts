@@ -97,7 +97,7 @@ export class TetrahedralMesh {
 
         this.tetShellBuffer = device.createBuffer({
             size: this.tetShellIndices.byteLength,
-            usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+            usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
             mappedAtCreation: true
         });
 
