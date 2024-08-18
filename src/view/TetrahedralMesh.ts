@@ -45,6 +45,7 @@ export class TetrahedralMesh {
                 }
             ]
         }
+
     }
 
     /* TODO: Rewrite this function entirely to make it more understandable */

@@ -3,7 +3,8 @@ struct VertexInput {
     @location(1) aVertexColor : vec3<f32>,
     //@location(1) aVertexNormal : vec3<f32>,
     // @location(2) cameraPosition : vec3<f32>,
-    @builtin(vertex_index) v_id: u32
+    @builtin(vertex_index) v_id: u32,
+    //@location(2) triangleID: u32
 };
 
 struct VertexOutput {
