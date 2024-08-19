@@ -13,7 +13,10 @@ import axios from 'axios';
 
 /* Source */
 import { uploadImage, fetchVolume, uploadVolume } from "./volume";
-import { TetrahedralMesh } from "./TetrahedralMesh";
+import { TetrahedralMesh } from "./Tetmesh/TetrahedralMesh";
+import { ReadFile } from "./Tetmesh/ReadFile";
+import { ExtractShell } from "./Tetmesh/ExtractShell";
+import { TetBuffers } from "./Tetmesh/TetBuffers";
 
 export class Renderer {
 
@@ -82,10 +85,9 @@ export class Renderer {
     async readTetMesh() {
         const fileUrl = 'https://raw.githubusercontent.com/mfiqi/mfiqi.github.io/Tetrahedral-Structure/dist/data/tetmesh.txt';
 
-        await TetrahedralMesh.readTetMeshFile(fileUrl);
-        TetrahedralMesh.createSurfaceIndices(this.device);
-        TetrahedralMesh.createTetColors(this.device);
-        TetrahedralMesh.extractShell(this.device);
+        await ReadFile.readTetMeshFile(fileUrl);
+        TetrahedralMesh.createTetColors();
+        ExtractShell.extract(this.device);
     }
 
     async setupDevice() {
@@ -106,14 +108,14 @@ export class Renderer {
     }
 
     async createAssets() {
-        TetrahedralMesh.createBufferLayout();
+        TetBuffers.createBufferLayout();
 
         this.transformBuffer = this.device.createBuffer({
             size: (64 * 4) + (4 * 4), // first is matrices, second is camera position
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
 
-        TetrahedralMesh.createTetBuffers(this.device);
+        TetBuffers.createTetBuffers(this.device);
     }
 
     async makeDepthBufferResources() {
@@ -229,8 +231,8 @@ export class Renderer {
                 entryPoint : "vs_main",
                 buffers: 
                 [
-                    TetrahedralMesh.vertexBufferLayout,
-                    TetrahedralMesh.colorBufferLayout
+                    TetBuffers.vertexBufferLayout,
+                    TetBuffers.colorBufferLayout
                 ]
                 //buffers: [this.cubeMesh.vertexBufferLayout]
             },
@@ -282,13 +284,13 @@ export class Renderer {
                 {
                     binding: 1,
                     resource: {
-                        buffer: TetrahedralMesh.tetVertsBuffer
+                        buffer: TetBuffers.tetVertsBuffer
                     },
                 },
                 {
                     binding: 2,
                     resource: {
-                        buffer: TetrahedralMesh.tetShellBuffer
+                        buffer: TetBuffers.tetShellBuffer
                     },
                 }
             ]
@@ -300,13 +302,13 @@ export class Renderer {
                 {
                     binding: 0,
                     resource: {
-                        buffer: TetrahedralMesh.tetVertsBuffer
+                        buffer: TetBuffers.tetVertsBuffer
                     },
                 },
                 {
                     binding: 1,
                     resource: {
-                        buffer: TetrahedralMesh.tetIndicesBuffer
+                        buffer: TetBuffers.tetIndicesBuffer
                     },
                 },
                 /*{
@@ -380,7 +382,7 @@ export class Renderer {
         
         this.device.queue.writeBuffer(this.transformBuffer, 256, <ArrayBuffer>renderables.eye_position);
         
-        this.device.queue.writeBuffer(TetrahedralMesh.tetVertsBuffer, 0, <ArrayBuffer>TetrahedralMesh.tetVertices);
+        this.device.queue.writeBuffer(TetBuffers.tetVertsBuffer, 0, <ArrayBuffer>TetrahedralMesh.tetVertices);
         //this.device.queue.writeBuffer(TetrahedralMesh.tetIndicesBuffer, 0, <ArrayBuffer>TetrahedralMesh.tetIndices);
 
         //command encoder: records draw commands for submission
@@ -406,9 +408,9 @@ export class Renderer {
         });
 
         renderpass.setPipeline(this.pipeline);
-        renderpass.setVertexBuffer(0, TetrahedralMesh.tetVertsBuffer);
-        renderpass.setVertexBuffer(1, TetrahedralMesh.tetColorBuffer);
-        renderpass.setIndexBuffer(TetrahedralMesh.tetShellBuffer, "uint32");
+        renderpass.setVertexBuffer(0, TetBuffers.tetVertsBuffer);
+        renderpass.setVertexBuffer(1, TetBuffers.tetColorBuffer);
+        renderpass.setIndexBuffer(TetBuffers.tetShellBuffer, "uint32");
         renderpass.setBindGroup(0, this.bindGroup);
         renderpass.drawIndexed(
             //12*3, // vertices per cube

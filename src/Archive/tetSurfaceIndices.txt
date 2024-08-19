@@ -1,0 +1,40 @@
+
+    static createSurfaceIndices(device: GPUDevice) {
+        this.tetSurfaceIndices = new Uint32Array(0);
+        for (let i = 0; i < this.tetIndices.length; i+=4) {
+            var index1: number = this.tetIndices[i];
+            var index2: number = this.tetIndices[i+1];
+            var index3: number = this.tetIndices[i+2];
+            var index4: number = this.tetIndices[i+3];
+
+            var triangle1 = new Uint32Array([index1,index2,index3]);
+            var triangle2 = new Uint32Array([index2,index3,index4]);
+            var triangle3 = new Uint32Array([index3,index4,index1]);
+            var triangle4 = new Uint32Array([index4,index1,index2]);
+
+            this.addToSurfaceTetIndices(triangle1, triangle2, triangle3, triangle4);
+        }
+
+        this.tetSurfaceIndexBuffer = device.createBuffer({
+            size: this.tetSurfaceIndices.byteLength,
+            usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+            mappedAtCreation: true
+        });
+
+        new Uint32Array(this.tetSurfaceIndexBuffer.getMappedRange()).set(this.tetSurfaceIndices);
+        this.tetSurfaceIndexBuffer.unmap();
+    }
+
+    /* Add to surface tet indices */
+    static addToSurfaceTetIndices(triangle1: Uint32Array, 
+        triangle2: Uint32Array, triangle3: Uint32Array, triangle4: Uint32Array) {
+        const tempArray = new Uint32Array(this.tetSurfaceIndices.length + 12);
+        tempArray.set(this.tetSurfaceIndices);
+        
+        tempArray.set(triangle1, this.tetSurfaceIndices.length);
+        tempArray.set(triangle2, this.tetSurfaceIndices.length + 3);
+        tempArray.set(triangle3, this.tetSurfaceIndices.length + 6);
+        tempArray.set(triangle4, this.tetSurfaceIndices.length + 9);
+
+        this.tetSurfaceIndices = tempArray;
+    } 
