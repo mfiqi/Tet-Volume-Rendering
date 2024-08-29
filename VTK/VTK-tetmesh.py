@@ -1,5 +1,5 @@
 import vtk
-
+import numpy as np
 # Create the reader for the .vtu file
 reader = vtk.vtkXMLUnstructuredGridReader()
 
@@ -32,10 +32,17 @@ for i in range(points.GetNumberOfPoints()):
 
 file1.write("Indices\n")
 
+uniqueIndices = np.array(10)
+
 for i in range(unstructured_grid.GetNumberOfCells()):
     cell = unstructured_grid.GetCell(i)
     cell_points = cell.GetPointIds()
-    file1.write(str([cell_points.GetId(j) for j in range(cell_points.GetNumberOfIds())])+"\n")
+    for j in range(cell_points.GetNumberOfIds()):
+        cell_point = cell_points.GetId(j)
+        if (not np.isin(uniqueIndices,cell_point)):
+            np.append(uniqueIndices,cell_point)
+
+    #file1.write(str([cell_points.GetId(j) for j in range(cell_points.GetNumberOfIds())])+"\n")
 
 
 # Access cell data

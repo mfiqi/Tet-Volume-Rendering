@@ -4,3 +4,14 @@
 4. Determine the new entrance point by performing the ray triangle intersection.
 5. Repeat steps 1 through 4 until exit.
 6. Accumulate color along the way.
+
+
+Step 1.
+
+I have to be able to determine the triangle that I am shading in the fragment shader.
+
+To do so, I need to pass unique flat-interpolated vertex IDs to the fragment shader.
+
+From the vertexIds, I should be able to determine the triangle that currently being shaded. 
+
+I need to create unique vertexIDs for each triangle.
