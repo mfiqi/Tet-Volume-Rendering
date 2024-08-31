@@ -13,4 +13,9 @@ export class TetrahedralMesh {
             this.tetColors[i] = Math.random();
         }
     }
+
+    static setupUniqueVertices() {
+        number: 
+        console.log(this.tetShellIndices);
+    }
 }

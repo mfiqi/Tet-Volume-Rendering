@@ -88,6 +88,9 @@ export class Renderer {
         await ReadFile.readTetMeshFile(fileUrl);
         TetrahedralMesh.createTetColors();
         ExtractShell.extract(this.device);
+
+        // Ensures each triangle has unique vertices
+        TetrahedralMesh.setupUniqueVertices();
     }
 
     async setupDevice() {

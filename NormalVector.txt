@@ -1,0 +1,4 @@
+1. To calculate the normal vector do I need to have the indices laid out in a specific manner.
+
+2. Should I precalculate the nrmal vector for each triangle.
+
