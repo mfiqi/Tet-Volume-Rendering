@@ -385,7 +385,7 @@ export class Renderer {
         
         this.device.queue.writeBuffer(this.transformBuffer, 256, <ArrayBuffer>renderables.eye_position);
         
-        this.device.queue.writeBuffer(TetBuffers.tetVertsBuffer, 0, <ArrayBuffer>TetrahedralMesh.tetVertices);
+        this.device.queue.writeBuffer(TetBuffers.tetVertsBuffer, 0, <ArrayBuffer>TetrahedralMesh.uniqueVerts);
         //this.device.queue.writeBuffer(TetrahedralMesh.tetIndicesBuffer, 0, <ArrayBuffer>TetrahedralMesh.tetIndices);
 
         //command encoder: records draw commands for submission
@@ -413,7 +413,7 @@ export class Renderer {
         renderpass.setPipeline(this.pipeline);
         renderpass.setVertexBuffer(0, TetBuffers.tetVertsBuffer);
         renderpass.setVertexBuffer(1, TetBuffers.tetColorBuffer);
-        renderpass.setIndexBuffer(TetBuffers.tetShellBuffer, "uint32");
+        renderpass.setIndexBuffer(TetBuffers.uniqueIndexBuffer, "uint32");
         renderpass.setBindGroup(0, this.bindGroup);
         renderpass.drawIndexed(
             //12*3, // vertices per cube
