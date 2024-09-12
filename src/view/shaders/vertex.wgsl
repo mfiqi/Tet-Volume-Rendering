@@ -1,9 +1,9 @@
 struct VertexInput {
     @location(0) aVertexPosition : vec3<f32>,
     @location(1) aVertexColor : vec3<f32>,
+    @builtin(vertex_index) v_id: u32,
     //@location(1) aVertexNormal : vec3<f32>,
     // @location(2) cameraPosition : vec3<f32>,
-    @builtin(vertex_index) v_id: u32,
     //@location(2) triangleID: u32
 };
 
@@ -12,7 +12,7 @@ struct VertexOutput {
     @location(0) ray_direction : vec3<f32>,
     @location(1) @interpolate(flat) camera_position : vec3<f32>,
     @location(2) @interpolate(flat) color : vec3<f32>,
-    @location(3) @interpolate(flat) primitive_id : u32
+    @location(3) @interpolate(flat) triangle_id : u32
 };
 
 struct TransformData {
@@ -33,15 +33,13 @@ struct TriangleIndices {
 
 @binding(0) @group(0) var<uniform> transform: TransformData;
 
-@binding(1) @group(0) var<storage, read> tetVerts: TetVertices;
-@binding(2) @group(0) var<storage, read> tetIndices: TriangleIndices;
-
 @vertex
 fn vs_main(vertexInput: VertexInput) -> VertexOutput
 {
     var vertexOutput : VertexOutput;
 
-    vertexOutput.primitive_id = vertexInput.v_id / 3;
+    // Determines the current triangle based on the vertex ID
+    vertexOutput.triangle_id = vertexInput.v_id / 3;
 
     var PVM : mat4x4<f32> = transform.projection * transform.view * transform.model;
 

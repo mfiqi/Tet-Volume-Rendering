@@ -50,7 +50,7 @@ export class TetBuffers {
 
     static setupUniqueVertsBuffer(device: GPUDevice) {
         TetBuffers.uniqueVertsBuffer = device.createBuffer({
-            size: TetrahedralMesh.uniqueVerts.length * 3 * 4,
+            size: TetrahedralMesh.uniqueVerts.byteLength,
             usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
             mappedAtCreation: true
         });

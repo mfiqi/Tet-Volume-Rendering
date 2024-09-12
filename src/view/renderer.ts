@@ -91,6 +91,7 @@ export class Renderer {
         // Ensures each triangle has unique vertices
         TetrahedralMesh.setupUniqueVertices();
         TetrahedralMesh.createTetColors();
+        TetrahedralMesh.calculateNormalVecotrs(this.device);
     }
 
     async setupDevice() {
@@ -172,15 +173,7 @@ export class Renderer {
                 },
                 {
                     binding: 1,
-                    visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-                    buffer: {
-                        type: "read-only-storage",
-                        hasDynamicOffset: false
-                    }
-                },
-                {
-                    binding: 2,
-                    visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+                    visibility: GPUShaderStage.FRAGMENT,
                     buffer: {
                         type: "read-only-storage",
                         hasDynamicOffset: false
@@ -287,13 +280,7 @@ export class Renderer {
                 {
                     binding: 1,
                     resource: {
-                        buffer: TetBuffers.uniqueVertsBuffer
-                    },
-                },
-                {
-                    binding: 2,
-                    resource: {
-                        buffer: TetBuffers.uniqueIndexBuffer
+                        buffer: TetrahedralMesh.normalBuffer
                     },
                 }
             ]
@@ -324,46 +311,6 @@ export class Renderer {
         });
     }
 
-    async makeVolume() {
-        this.clearColor = linearToSRGB(0.1);
-
-        this.sampler = this.device.createSampler({
-            magFilter: "linear",
-            minFilter: "linear",
-        });
-
-        this.volumeDims = [256,256,256];
-
-        const longestAxis = Math.max(this.volumeDims[0], Math.max(this.volumeDims[1], this.volumeDims[2]));
-
-        this.volumeScale = [
-            this.volumeDims[0] / longestAxis,
-            this.volumeDims[1] / longestAxis,
-            this.volumeDims[2] / longestAxis
-        ];
-
-        this.colormapTexture = await uploadImage(this.device, "dist/color/rainbow.png");
-
-        this.volumeData = await fetchVolume("dist/data/bonsai_256x256x256_uint8.raw");
-
-        this.volumeTexture = await uploadVolume(this.device, this.volumeDims, this.volumeData);
-
-        this.accumBuffers = [
-            this.device.createTexture({
-                size: [this.canvas.width, this.canvas.height, 1],
-                format: "rgba32float",
-                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING
-            }),
-            this.device.createTexture({
-                size: [this.canvas.width, this.canvas.height, 1],
-                format: "rgba32float",
-                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING
-            })
-        ];
-    
-        this.accumBufferViews = [this.accumBuffers[0].createView(), this.accumBuffers[1].createView()];
-    }
-
     async render(renderables: RenderData) {
         //Early exit tests
         if (!this.device || !this.pipeline) {
@@ -386,8 +333,6 @@ export class Renderer {
         this.device.queue.writeBuffer(this.transformBuffer, 256, <ArrayBuffer>renderables.eye_position);
         
         this.device.queue.writeBuffer(TetBuffers.uniqueVertsBuffer, 0, <ArrayBuffer>TetrahedralMesh.uniqueVerts);
-
-
         this.device.queue.writeBuffer(TetBuffers.uniqueIndexBuffer, 0, <ArrayBuffer>TetrahedralMesh.uniqueIndices);
 
         //command encoder: records draw commands for submission

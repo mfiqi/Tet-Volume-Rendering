@@ -1,3 +1,4 @@
+import { vec3 } from "gl-matrix";
 import { TetBuffers } from "./TetBuffers";
 
 export class TetrahedralMesh {
@@ -17,6 +18,63 @@ export class TetrahedralMesh {
     static uniqueVerts: Float32Array;
     static uniqueIndices: Uint32Array = new Uint32Array(0);
 
+    static normalVectors: Float32Array;
+    static normalBuffer: GPUBuffer;
+
+    // https://stackoverflow.com/a/23709352
+    // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/geometry-of-a-triangle.html
+    static calculateNormalVecotrs(device: GPUDevice) {
+        // There will be one normal vector per triangle
+        this.normalVectors = new Float32Array(this.uniqueVerts.length/3);
+        
+        for (let i = 0; i < this.uniqueVerts.length; i+=9) {
+            var p1: Float32Array = new Float32Array([this.uniqueVerts[i], this.uniqueVerts[i+1], this.uniqueVerts[i+2]]);
+            var p2: Float32Array = new Float32Array([this.uniqueVerts[i+3], this.uniqueVerts[i+4], this.uniqueVerts[i+5]]);
+            var p3: Float32Array = new Float32Array([this.uniqueVerts[i+6], this.uniqueVerts[i+7], this.uniqueVerts[i+8]]);
+
+            var A: Float32Array = this.vectorSubtraction(p1,p2); // p2 - p1
+            var B: Float32Array = this.vectorSubtraction(p1,p3); // p3 - p1
+
+            // Used for a more intuitive understanding
+            const x = 0;
+            const y = 1;
+            const z = 2;
+
+            // Calculates Normal Vector
+            var nVector: vec3 = [A[y] * B[z] - A[z] * B[y],
+                                 A[z] * B[x] - A[x] * B[z],
+                                 A[x] * B[y] - A[y] * B[x]];
+
+            vec3.normalize(nVector, nVector);
+
+            this.normalVectors[(i/3)+x] = nVector[x];
+            this.normalVectors[(i/3)+y] = nVector[y];
+            this.normalVectors[(i/3)+z] = nVector[z];
+        }
+
+        this.normalBuffer = device.createBuffer({
+            size: this.normalVectors.byteLength,
+            usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+            mappedAtCreation: true
+        });
+
+        new Uint32Array(this.normalBuffer.getMappedRange()).set(this.normalVectors);
+        this.normalBuffer.unmap();
+        console.log(this.normalVectors);
+    }
+
+    static vectorSubtraction(p1: Float32Array, p2: Float32Array): Float32Array {
+        var result: Float32Array = new Float32Array(3);
+
+        result[0] = p2[0] - p1[0];
+        result[1] = p2[1] - p1[1];
+        result[2] = p2[2] - p1[2];
+
+        return result;
+    }
+
+    // TODO: Everything below this line needs its own class
+
     static setupUniqueVertices() {
         this.uniqueVerts = this.tetVertices;
 
@@ -28,11 +86,6 @@ export class TetrahedralMesh {
                 this.addToUniqueIndices(this.tetShellIndices[index]);
             }
         }
-
-        console.log(this.tetShellIndices);
-        console.log(this.uniqueIndices);
-        console.log(this.tetVertices);
-        console.log(this.uniqueVerts);
     }
 
     static duplicate(index: number) {

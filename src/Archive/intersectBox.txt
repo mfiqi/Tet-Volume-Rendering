@@ -1,0 +1,15 @@
+
+// Calculates ray box intersection
+fn intersect_box(origin: vec3<f32>, rayDir: vec3<f32>) -> vec2<f32>
+{
+    var box_min: vec3<f32> = vec3<f32>(0.0,0.0,0.0);
+    var box_max: vec3<f32> = vec3<f32>(1.0,1.0,1.0);
+    var inv_dir: vec3<f32>  = 1.0 / rayDir;
+    var tmin_tmp: vec3<f32> = (box_min - origin) * inv_dir;
+    var tmax_tmp: vec3<f32> = (box_max - origin) * inv_dir;
+    var tmin: vec3<f32> = min(tmin_tmp, tmax_tmp);
+    var tmax: vec3<f32> = max(tmin_tmp, tmax_tmp);
+    var t0: f32 = max(tmin.x, max(tmin.y, tmin.z));
+    var t1: f32 = min(tmax.x, min(tmax.y, tmax.z));
+    return vec2<f32>(t0,t1);
+}
