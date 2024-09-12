@@ -8,8 +8,8 @@ export class TetrahedralMesh {
     static tetShellIndices: Uint32Array;
 
     static createTetColors() {
-        this.tetColors = new Float32Array(this.tetVertices.length);
-        for (let i = 0; i < this.tetVertices.length; i++) {
+        this.tetColors = new Float32Array(this.uniqueVerts.length);
+        for (let i = 0; i < this.uniqueVerts.length; i++) {
             this.tetColors[i] = Math.random();
         }
     }
@@ -31,6 +31,8 @@ export class TetrahedralMesh {
 
         console.log(this.tetShellIndices);
         console.log(this.uniqueIndices);
+        console.log(this.tetVertices);
+        console.log(this.uniqueVerts);
     }
 
     static duplicate(index: number) {
@@ -46,7 +48,7 @@ export class TetrahedralMesh {
         this.addToUniqueVerts(vertex);
 
         // Add newly inserted vertex as the index instead
-        var newIndex = this.uniqueVerts.length/3;
+        var newIndex = (this.uniqueVerts.length/3)-1;
         this.addToUniqueIndices(newIndex);
     }
 

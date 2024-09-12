@@ -86,11 +86,11 @@ export class Renderer {
         const fileUrl = 'https://raw.githubusercontent.com/mfiqi/mfiqi.github.io/Tetrahedral-Structure/dist/data/tetmesh.txt';
 
         await ReadFile.readTetMeshFile(fileUrl);
-        TetrahedralMesh.createTetColors();
         ExtractShell.extract(this.device);
 
         // Ensures each triangle has unique vertices
         TetrahedralMesh.setupUniqueVertices();
+        TetrahedralMesh.createTetColors();
     }
 
     async setupDevice() {
@@ -256,7 +256,7 @@ export class Renderer {
             
             primitive : {
                 topology : "triangle-list",
-                //cullMode: "front" 
+                cullMode: "none" 
             },
     
             layout: pipelineLayout,
@@ -287,13 +287,13 @@ export class Renderer {
                 {
                     binding: 1,
                     resource: {
-                        buffer: TetBuffers.tetVertsBuffer
+                        buffer: TetBuffers.uniqueVertsBuffer
                     },
                 },
                 {
                     binding: 2,
                     resource: {
-                        buffer: TetBuffers.tetShellBuffer
+                        buffer: TetBuffers.uniqueIndexBuffer
                     },
                 }
             ]
@@ -305,13 +305,13 @@ export class Renderer {
                 {
                     binding: 0,
                     resource: {
-                        buffer: TetBuffers.tetVertsBuffer
+                        buffer: TetBuffers.uniqueVertsBuffer
                     },
                 },
                 {
                     binding: 1,
                     resource: {
-                        buffer: TetBuffers.tetIndicesBuffer
+                        buffer: TetBuffers.uniqueIndexBuffer
                     },
                 },
                 /*{
@@ -385,8 +385,10 @@ export class Renderer {
         
         this.device.queue.writeBuffer(this.transformBuffer, 256, <ArrayBuffer>renderables.eye_position);
         
-        this.device.queue.writeBuffer(TetBuffers.tetVertsBuffer, 0, <ArrayBuffer>TetrahedralMesh.uniqueVerts);
-        //this.device.queue.writeBuffer(TetrahedralMesh.tetIndicesBuffer, 0, <ArrayBuffer>TetrahedralMesh.tetIndices);
+        this.device.queue.writeBuffer(TetBuffers.uniqueVertsBuffer, 0, <ArrayBuffer>TetrahedralMesh.uniqueVerts);
+
+
+        this.device.queue.writeBuffer(TetBuffers.uniqueIndexBuffer, 0, <ArrayBuffer>TetrahedralMesh.uniqueIndices);
 
         //command encoder: records draw commands for submission
         const commandEncoder : GPUCommandEncoder = this.device.createCommandEncoder();
@@ -411,13 +413,13 @@ export class Renderer {
         });
 
         renderpass.setPipeline(this.pipeline);
-        renderpass.setVertexBuffer(0, TetBuffers.tetVertsBuffer);
+        renderpass.setVertexBuffer(0, TetBuffers.uniqueVertsBuffer);
         renderpass.setVertexBuffer(1, TetBuffers.tetColorBuffer);
         renderpass.setIndexBuffer(TetBuffers.uniqueIndexBuffer, "uint32");
         renderpass.setBindGroup(0, this.bindGroup);
         renderpass.drawIndexed(
             //12*3, // vertices per cube
-            TetrahedralMesh.tetShellIndices.length,
+            TetrahedralMesh.uniqueIndices.length,
             //4*3 * 2, // vertices per cube, last one is number of tets
             1, 0, 0
         );

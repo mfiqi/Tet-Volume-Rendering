@@ -39,7 +39,7 @@ export class TetBuffers {
 
     static setupUniqueIndexBuffer(device: GPUDevice) {
         TetBuffers.uniqueIndexBuffer = device.createBuffer({
-            size: TetrahedralMesh.uniqueIndices.byteLength,
+            size: TetrahedralMesh.uniqueIndices.byteLength * 10,
             usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
             mappedAtCreation: true
         });
@@ -50,7 +50,7 @@ export class TetBuffers {
 
     static setupUniqueVertsBuffer(device: GPUDevice) {
         TetBuffers.uniqueVertsBuffer = device.createBuffer({
-            size: TetrahedralMesh.uniqueVerts.byteLength,
+            size: TetrahedralMesh.uniqueVerts.length * 3 * 4,
             usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
             mappedAtCreation: true
         });
@@ -62,7 +62,7 @@ export class TetBuffers {
 
     static async createTetBuffers(device: GPUDevice) {
         this.tetVertsBuffer = device.createBuffer({
-            size: (TetrahedralMesh.uniqueVerts.length/3) * 3 * 4, // verts * 3 points per vert * 4 bytes
+            size: TetrahedralMesh.uniqueVerts.length * 3 * 4, // verts * 3 points per vert * 4 bytes
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.VERTEX
         });
 
