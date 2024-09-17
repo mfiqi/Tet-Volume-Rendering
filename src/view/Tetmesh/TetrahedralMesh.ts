@@ -1,5 +1,6 @@
 import { vec3 } from "gl-matrix";
 import { TetBuffers } from "./TetBuffers";
+import { verify } from "crypto";
 
 export class TetrahedralMesh {
     /* Tet Mesh Information */
@@ -26,30 +27,34 @@ export class TetrahedralMesh {
     static calculateNormalVecotrs(device: GPUDevice) {
         // There will be one normal vector per triangle
         this.normalVectors = new Float32Array(this.uniqueVerts.length/3);
+
+        // Used for a more intuitive understanding
+        const triangleSize: number = 9;
+        const x = 0;
+        const y = 1;
+        const z = 2;
         
-        for (let i = 0; i < this.uniqueVerts.length; i+=9) {
-            var p1: Float32Array = new Float32Array([this.uniqueVerts[i], this.uniqueVerts[i+1], this.uniqueVerts[i+2]]);
-            var p2: Float32Array = new Float32Array([this.uniqueVerts[i+3], this.uniqueVerts[i+4], this.uniqueVerts[i+5]]);
-            var p3: Float32Array = new Float32Array([this.uniqueVerts[i+6], this.uniqueVerts[i+7], this.uniqueVerts[i+8]]);
+        // Iterates through every triangle in uniqueVerts
+        for (let i = 0; i < this.uniqueVerts.length; i+=triangleSize) {
+            var p1: vec3 = [this.uniqueVerts[i], this.uniqueVerts[i+1], this.uniqueVerts[i+2]];
+            var p2: vec3 = [this.uniqueVerts[i+3], this.uniqueVerts[i+4], this.uniqueVerts[i+5]];
+            var p3: vec3 = [this.uniqueVerts[i+6], this.uniqueVerts[i+7], this.uniqueVerts[i+8]];
 
-            var A: Float32Array = this.vectorSubtraction(p1,p2); // p2 - p1
-            var B: Float32Array = this.vectorSubtraction(p1,p3); // p3 - p1
+            var A: vec3 = vec3.create();
+            var B: vec3 = vec3.create();
 
-            // Used for a more intuitive understanding
-            const x = 0;
-            const y = 1;
-            const z = 2;
+            vec3.sub(A,p2,p1); // p2 - p1
+            vec3.sub(B,p3,p1); // p3 - p1
 
             // Calculates Normal Vector
-            var nVector: vec3 = [A[y] * B[z] - A[z] * B[y],
-                                 A[z] * B[x] - A[x] * B[z],
-                                 A[x] * B[y] - A[y] * B[x]];
+            var normal: vec3 = vec3.create();
+            vec3.cross(normal,A,B);
+            vec3.normalize(normal, normal);
 
-            vec3.normalize(nVector, nVector);
-
-            this.normalVectors[(i/3)+x] = nVector[x];
-            this.normalVectors[(i/3)+y] = nVector[y];
-            this.normalVectors[(i/3)+z] = nVector[z];
+            // Stores the calculated normal in array
+            this.normalVectors[(i/3)+x] = normal[x];
+            this.normalVectors[(i/3)+y] = normal[y];
+            this.normalVectors[(i/3)+z] = normal[z];
         }
 
         this.normalBuffer = device.createBuffer({
@@ -61,16 +66,6 @@ export class TetrahedralMesh {
         new Uint32Array(this.normalBuffer.getMappedRange()).set(this.normalVectors);
         this.normalBuffer.unmap();
         console.log(this.normalVectors);
-    }
-
-    static vectorSubtraction(p1: Float32Array, p2: Float32Array): Float32Array {
-        var result: Float32Array = new Float32Array(3);
-
-        result[0] = p2[0] - p1[0];
-        result[1] = p2[1] - p1[1];
-        result[2] = p2[2] - p1[2];
-
-        return result;
     }
 
     // TODO: Everything below this line needs its own class

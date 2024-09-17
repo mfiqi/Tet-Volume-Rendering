@@ -178,6 +178,14 @@ export class Renderer {
                         type: "read-only-storage",
                         hasDynamicOffset: false
                     }
+                },
+                {
+                    binding: 2,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    buffer: {
+                        type: "read-only-storage",
+                        hasDynamicOffset: false
+                    }
                 }
             ]
         });
@@ -281,6 +289,12 @@ export class Renderer {
                     binding: 1,
                     resource: {
                         buffer: TetrahedralMesh.normalBuffer
+                    },
+                },
+                {
+                    binding: 2,
+                    resource: {
+                        buffer: TetBuffers.uniqueVertsBuffer
                     },
                 }
             ]
