@@ -1,4 +1,4 @@
-import { Cube } from "./cube";
+import { Cube } from "../Archive/cube";
 import { Camera } from "./camera";
 import { Light } from "./light";
 import { vec3 } from "gl-matrix";

@@ -1,11 +1,13 @@
-import { Renderer } from "../view/renderer";
+import { Renderer } from "../view/Renderer/renderer";
 import { Scene } from "../model/scene";
 import { event } from "jquery";
 import $ from "jquery"
+import { SetupRenderer } from "../view/Renderer/RenderSetup";
 
 export class App {
     canvas: HTMLCanvasElement;
     renderer: Renderer;
+    setup: SetupRenderer;
     scene: Scene;
 
     keyLabel: HTMLElement;
@@ -20,6 +22,7 @@ export class App {
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         this.renderer = new Renderer(canvas);
+        this.setup = new SetupRenderer(this.renderer);
         this.scene = new Scene();
 
         this.forwards_amount = 0;
@@ -43,7 +46,7 @@ export class App {
     }
 
     async initialize() {
-        await this.renderer.Initialize();
+        await this.setup.Initialize();
     }
 
     run = () => {

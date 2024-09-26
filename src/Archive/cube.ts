@@ -1,5 +1,5 @@
 import { vec3, mat4 } from "gl-matrix";
-import { Deg2Rad } from "./math";
+import { Deg2Rad } from "../model/math";
 
 export class Cube {
     position: vec3;
