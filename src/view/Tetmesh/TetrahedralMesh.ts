@@ -65,7 +65,6 @@ export class TetrahedralMesh {
 
         new Uint32Array(this.normalBuffer.getMappedRange()).set(this.normalVectors);
         this.normalBuffer.unmap();
-        console.log(this.normalVectors);
     }
 
     // TODO: Everything below this line needs its own class

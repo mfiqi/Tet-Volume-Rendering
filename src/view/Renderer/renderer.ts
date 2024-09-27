@@ -46,6 +46,12 @@ export class Renderer {
         GPURenderContext.device.queue.writeBuffer(TetBuffers.uniqueIndexBuffer, 0, <ArrayBuffer>TetrahedralMesh.uniqueIndices);
         GPURenderContext.device.queue.writeBuffer(TetrahedralMesh.normalBuffer, 0, <ArrayBuffer>TetrahedralMesh.normalVectors);
 
+        
+        console.log("\nVertices\n"+TetrahedralMesh.tetVertices);
+        console.log("\nUnique Vectors\n"+TetrahedralMesh.normalVectors);
+        console.log("\nUnique Indices\n"+TetrahedralMesh.uniqueIndices);
+        console.log("\nNormal Vectors\n"+TetrahedralMesh.uniqueVerts);
+
         //command encoder: records draw commands for submission
         const commandEncoder : GPUCommandEncoder = GPURenderContext.device.createCommandEncoder();
         

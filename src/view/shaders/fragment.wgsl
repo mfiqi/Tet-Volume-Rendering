@@ -125,10 +125,10 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     var P = origin + t*rayDir;
 
     // Test if normals is being calculated correctly
-    if (N.x < 0) {N.x *= -1;}
-    if (N.y < 0) {N.y *= -1;}
-    if (N.z < 0) {N.z *= -1;}
-    return vec4<f32>(N, 1.0);
+    // if (N.x < 0) {N.x *= -1;}
+    // if (N.y < 0) {N.y *= -1;}
+    // if (N.z < 0) {N.z *= -1;}
+    // return vec4<f32>(N, 1.0);
 
     // if (ray_triangle_intersection_test(v0, v1, v2, P, N)) { 
     //     return vec4<f32>(1.0, 1.0, 1.0, 1.0); // white
@@ -136,5 +136,5 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     //     return vec4<f32>(0.0, 0.0, 0.0, 1.0); // black
     // }
 
-    // return vec4<f32>(fragmentInput.color, 1.0);
+    return vec4<f32>(fragmentInput.color, 1.0);
 }
