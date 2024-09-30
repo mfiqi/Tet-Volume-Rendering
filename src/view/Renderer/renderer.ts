@@ -48,9 +48,10 @@ export class Renderer {
 
         
         console.log("\nVertices\n"+TetrahedralMesh.tetVertices);
-        console.log("\nUnique Vectors\n"+TetrahedralMesh.normalVectors);
+        console.log("\nIndices\n"+TetrahedralMesh.tetShellIndices);
+        console.log("\nUnique Vectors\n"+TetrahedralMesh.uniqueVerts);
         console.log("\nUnique Indices\n"+TetrahedralMesh.uniqueIndices);
-        console.log("\nNormal Vectors\n"+TetrahedralMesh.uniqueVerts);
+        console.log("\nNormal Vectors\n"+TetrahedralMesh.normalVectors);
 
         //command encoder: records draw commands for submission
         const commandEncoder : GPUCommandEncoder = GPURenderContext.device.createCommandEncoder();

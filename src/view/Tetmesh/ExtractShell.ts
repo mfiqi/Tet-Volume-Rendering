@@ -18,10 +18,10 @@ export class ExtractShell {
         // Iterate through every tetrahedron
         for (let j = 0; j < TetrahedralMesh.tetIndices.length; j += 4) {
             const faces = [
-                new Uint32Array([TetrahedralMesh.tetIndices[j], TetrahedralMesh.tetIndices[j + 1], TetrahedralMesh.tetIndices[j + 2]]),
-                new Uint32Array([TetrahedralMesh.tetIndices[j + 1], TetrahedralMesh.tetIndices[j + 2], TetrahedralMesh.tetIndices[j + 3]]),
-                new Uint32Array([TetrahedralMesh.tetIndices[j + 2], TetrahedralMesh.tetIndices[j + 3], TetrahedralMesh.tetIndices[j]]),
-                new Uint32Array([TetrahedralMesh.tetIndices[j + 3], TetrahedralMesh.tetIndices[j], TetrahedralMesh.tetIndices[j + 1]])
+                new Uint32Array([TetrahedralMesh.tetIndices[j+1], TetrahedralMesh.tetIndices[j+2], TetrahedralMesh.tetIndices[j+3]]),
+                new Uint32Array([TetrahedralMesh.tetIndices[j], TetrahedralMesh.tetIndices[j+2], TetrahedralMesh.tetIndices[j+3]]),
+                new Uint32Array([TetrahedralMesh.tetIndices[j], TetrahedralMesh.tetIndices[j+1], TetrahedralMesh.tetIndices[j+3]]),
+                new Uint32Array([TetrahedralMesh.tetIndices[j], TetrahedralMesh.tetIndices[j+1], TetrahedralMesh.tetIndices[j+2]])
             ];
     
             for (const face of faces) {
