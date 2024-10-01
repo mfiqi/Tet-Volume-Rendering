@@ -47,11 +47,13 @@ export class Renderer {
         GPURenderContext.device.queue.writeBuffer(TetrahedralMesh.normalBuffer, 0, <ArrayBuffer>TetrahedralMesh.normalVectors);
 
         
-        console.log("\nVertices\n"+TetrahedralMesh.tetVertices);
-        console.log("\nIndices\n"+TetrahedralMesh.tetShellIndices);
-        console.log("\nUnique Vectors\n"+TetrahedralMesh.uniqueVerts);
-        console.log("\nUnique Indices\n"+TetrahedralMesh.uniqueIndices);
-        console.log("\nNormal Vectors\n"+TetrahedralMesh.normalVectors);
+        // console.log("\nVertices\n"+TetrahedralMesh.tetVertices);
+        // console.log("\nIndices\n"+TetrahedralMesh.tetShellIndices);
+        // console.log("\nUnique Vectors\n"+TetrahedralMesh.uniqueVerts);
+        // console.log("\nUnique Indices\n"+TetrahedralMesh.uniqueIndices);
+        // console.log("\nNormal Vectors\n"+TetrahedralMesh.normalVectors);
+
+        this.printInfo();
 
         //command encoder: records draw commands for submission
         const commandEncoder : GPUCommandEncoder = GPURenderContext.device.createCommandEncoder();
@@ -81,5 +83,43 @@ export class Renderer {
         renderpass.end();
 
         GPURenderContext.device.queue.submit([commandEncoder.finish()]);
+    }
+
+    /* Debugging Info */
+    printInfo() {
+        console.log("\nVertices\n");
+        for (let i = 0; i < TetrahedralMesh.tetVertices.length; i+=3) {
+            console.log("Vertex "+i/3+": ("+TetrahedralMesh.tetVertices[i]+","
+                                        +TetrahedralMesh.tetVertices[i+1]+","
+                                        +TetrahedralMesh.tetVertices[i+2]+")");
+        }
+
+        console.log("\nIndices\n");
+        for (let i = 0; i < TetrahedralMesh.tetShellIndices.length; i+=3) {
+            console.log("Triangle "+i/3+": ("+TetrahedralMesh.tetShellIndices[i]+","
+                                        +TetrahedralMesh.tetShellIndices[i+1]+","
+                                        +TetrahedralMesh.tetShellIndices[i+2]+")");
+        }
+
+        console.log("\nUnique Vertices\n");
+        for (let i = 0; i < TetrahedralMesh.uniqueVerts.length; i+=3) {
+            console.log("Vertex "+i/3+": ("+TetrahedralMesh.uniqueVerts[i]+","
+                                        +TetrahedralMesh.uniqueVerts[i+1]+","
+                                        +TetrahedralMesh.uniqueVerts[i+2]+")");
+        }
+
+        console.log("\nUnique Indices\n");
+        for (let i = 0; i < TetrahedralMesh.uniqueIndices.length; i+=3) {
+            console.log("Triangle "+i/3+": ("+TetrahedralMesh.uniqueIndices[i]+","
+                                        +TetrahedralMesh.uniqueIndices[i+1]+","
+                                        +TetrahedralMesh.uniqueIndices[i+2]+")");
+        }
+
+        console.log("\nNormal Vectors\n");
+        for (let i = 0; i < TetrahedralMesh.normalVectors.length; i+=3) {
+            console.log("Normal "+i/3+": ("+TetrahedralMesh.normalVectors[i]+","
+                                        +TetrahedralMesh.normalVectors[i+1]+","
+                                        +TetrahedralMesh.normalVectors[i+2]+")");
+        }
     }
 }

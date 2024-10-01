@@ -40,6 +40,11 @@ export class TetrahedralMesh {
             var p2: vec3 = [this.uniqueVerts[i+3], this.uniqueVerts[i+4], this.uniqueVerts[i+5]];
             var p3: vec3 = [this.uniqueVerts[i+6], this.uniqueVerts[i+7], this.uniqueVerts[i+8]];
 
+            console.log("Triangle "+i/triangleSize);
+            console.log("p1: "+p1);
+            console.log("p2: "+p2);
+            console.log("p3: "+p3);
+
             var A: vec3 = vec3.create();
             var B: vec3 = vec3.create();
 
@@ -50,7 +55,7 @@ export class TetrahedralMesh {
             var normal: vec3 = vec3.create();
             vec3.cross(normal,A,B);
             vec3.normalize(normal, normal);
-
+            console.log("NORMAL: "+normal);
             // Stores the calculated normal in array
             this.normalVectors[(i/3)+x] = normal[x];
             this.normalVectors[(i/3)+y] = normal[y];
