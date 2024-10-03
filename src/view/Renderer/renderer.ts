@@ -46,14 +46,8 @@ export class Renderer {
         GPURenderContext.device.queue.writeBuffer(TetBuffers.uniqueIndexBuffer, 0, <ArrayBuffer>TetrahedralMesh.uniqueIndices);
         GPURenderContext.device.queue.writeBuffer(TetrahedralMesh.normalBuffer, 0, <ArrayBuffer>TetrahedralMesh.normalVectors);
 
-        
-        // console.log("\nVertices\n"+TetrahedralMesh.tetVertices);
-        // console.log("\nIndices\n"+TetrahedralMesh.tetShellIndices);
-        // console.log("\nUnique Vectors\n"+TetrahedralMesh.uniqueVerts);
-        // console.log("\nUnique Indices\n"+TetrahedralMesh.uniqueIndices);
-        // console.log("\nNormal Vectors\n"+TetrahedralMesh.normalVectors);
-
-        this.printInfo();
+        if (!this.printed)
+            this.printInfo();
 
         //command encoder: records draw commands for submission
         const commandEncoder : GPUCommandEncoder = GPURenderContext.device.createCommandEncoder();
@@ -86,7 +80,9 @@ export class Renderer {
     }
 
     /* Debugging Info */
+    printed: boolean = false;
     printInfo() {
+        this.printed = true;
         console.log("\nVertices\n");
         for (let i = 0; i < TetrahedralMesh.tetVertices.length; i+=3) {
             console.log("Vertex "+i/3+": ("+TetrahedralMesh.tetVertices[i]+","
@@ -121,5 +117,11 @@ export class Renderer {
                                         +TetrahedralMesh.normalVectors[i+1]+","
                                         +TetrahedralMesh.normalVectors[i+2]+")");
         }
+
+        console.log("\nIndices Lnegth\n");
+        console.log(TetrahedralMesh.uniqueIndices.length);
+
+        console.log("\nUnique Verts Buffer\n");
+        console.log(TetBuffers.uniqueVertsBuffer)
     }
 }
