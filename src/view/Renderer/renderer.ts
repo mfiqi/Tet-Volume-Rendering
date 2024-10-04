@@ -68,6 +68,7 @@ export class Renderer {
         renderpass.setPipeline(GPURenderContext.pipeline);
         renderpass.setVertexBuffer(0, TetBuffers.uniqueVertsBuffer);
         renderpass.setVertexBuffer(1, TetBuffers.tetColorBuffer);
+        // triangle id 
         renderpass.setIndexBuffer(TetBuffers.uniqueIndexBuffer, "uint32");
         renderpass.setBindGroup(0, GPURenderContext.bindGroup);
         renderpass.drawIndexed(

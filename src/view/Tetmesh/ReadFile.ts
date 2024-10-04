@@ -44,9 +44,9 @@ export class ReadFile {
         const matches = line.match(regex);
         const values = matches.map(Number);
 
-        // values[0] /= -10;
-        // values[1] /= -10;
-        // values[2] /= -10;
+        values[0] /= -10;
+        values[1] /= -10;
+        values[2] /= -10;
 
         const newFloat32Array = new Float32Array(TetrahedralMesh.tetVertices.length + 3);
         newFloat32Array.set(TetrahedralMesh.tetVertices);

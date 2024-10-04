@@ -129,12 +129,14 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     if (N.y < 0.0) {N.y *= -1;}
     if (N.z < 0.0) {N.z *= -1;}
 
-    if (t_id == 0) { return vec4<f32> (1.0,0.0,0.0,1.0); }
-    if (t_id == 1) { return vec4<f32> (0.0,1.0,0.0,1.0); }
-    if (t_id == 2) { return vec4<f32> (0.0,0.0,1.0,1.0); }
-    if (t_id == 3) { return vec4<f32> (1.0,0.0,1.0,1.0); }
+    return vec4<f32>(N,1.0);
 
-    return vec4<f32> (1.0,1.0,1.0,1.0);
+    //if (t_id == 0) { return vec4<f32> (1.0,0.0,0.0,1.0); } // red
+    //if (t_id == 1) { return vec4<f32> (0.0,1.0,0.0,1.0); } // blue
+    //if (t_id == 2) { return vec4<f32> (0.0,0.0,1.0,1.0); } // green
+    //if (t_id == 3) { return vec4<f32> (1.0,0.0,1.0,1.0); } // pink 
+
+    //return vec4<f32> (1.0,1.0,1.0,1.0);
     //if (t_id == 0) {
     //    return vec4<f32>(0.0,0.0,0.0,1.0); // black for triangle that faces to the right
     //} else {

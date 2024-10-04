@@ -39,7 +39,7 @@ fn vs_main(vertexInput: VertexInput) -> VertexOutput
     var vertexOutput : VertexOutput;
 
     // Determines the current triangle based on the vertex ID
-    vertexOutput.triangle_id = vertexInput.v_id / 3;
+    vertexOutput.triangle_id = u32(ceil(f32(vertexInput.v_id) * 0.33333));
 
     var PVM : mat4x4<f32> = transform.projection * transform.view * transform.model;
 
