@@ -4,25 +4,41 @@ import { Deg2Rad } from "./math";
 export class Camera {
 
     position: vec3;
-    eulers: vec3;
+    //eulers: vec3;
+    theta: number;
+    phi: number;
     view: mat4;
     forwards: vec3;
     right: vec3;
     up: vec3;
 
-    constructor(position: vec3, theta: number, phi: number) {
+    /*constructor(position: vec3, theta: number, phi: number) {
         this.position = position;
-        this.eulers = [0, phi, theta];
-
-        this.forwards = vec3.create();
-        this.forwards = [
-            Math.cos(Deg2Rad(this.eulers[2])) * Math.sin(Deg2Rad(this.eulers[1])),
-            Math.sin(Deg2Rad(this.eulers[2])) * Math.sin(Deg2Rad(this.eulers[1])),
-            Math.cos(Deg2Rad(this.eulers[1]))
-        ];
 
         this.up = vec3.create();
         this.up = [0,1,0];
+        
+        var centerOfInterest = vec3.create();
+        centerOfInterest = [0.5, 0.5, 0.5];
+
+        this.view = mat4.create();
+        mat4.lookAt(this.view, this.position, centerOfInterest, this.up);
+    }*/
+
+    constructor(position: vec3, theta: number, phi: number) {
+        this.position = position;
+        this.theta = theta;
+        this.phi = phi;
+
+        this.forwards = vec3.create();
+        this.forwards = [
+            Math.cos(Deg2Rad(theta)) * Math.sin(Deg2Rad(phi)),
+            Math.sin(Deg2Rad(theta)) * Math.sin(Deg2Rad(phi)),
+            Math.cos(Deg2Rad(phi))
+        ];
+
+        this.up = vec3.create();
+        this.up = [0,0,1];
 
         this.right = vec3.create();
         vec3.cross(this.right, this.forwards, this.up);
@@ -33,9 +49,9 @@ export class Camera {
 
     update() {
         this.forwards = [
-            Math.cos(Deg2Rad(this.eulers[2])) * Math.cos(Deg2Rad(this.eulers[1])),
-            Math.sin(Deg2Rad(this.eulers[2])) * Math.cos(Deg2Rad(this.eulers[1])),
-            Math.sin(Deg2Rad(this.eulers[1]))
+            Math.cos(Deg2Rad(this.theta)) * Math.cos(Deg2Rad(this.phi)),
+            Math.sin(Deg2Rad(this.theta)) * Math.cos(Deg2Rad(this.phi)),
+            Math.sin(Deg2Rad(this.phi))
         ];
 
         vec3.cross(this.right, this.forwards, [0,0,1]);

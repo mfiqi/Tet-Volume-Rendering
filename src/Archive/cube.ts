@@ -15,8 +15,16 @@ export class Cube {
 
     update(rotate: boolean) {
         if (rotate) {
-            mat4.rotateY(this.model, this.model, Deg2Rad(10));
+            mat4.rotateY(this.model, this.model, Deg2Rad(1));
         }
+    }
+
+    rotateY(degree: number) {
+        mat4.rotateY(this.model, this.model, Deg2Rad(degree));
+    }
+    
+    rotateX(degree: number) {
+        mat4.rotateX(this.model, this.model, Deg2Rad(degree));
     }
 
     /*update() {

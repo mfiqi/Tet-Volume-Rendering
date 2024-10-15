@@ -23,13 +23,14 @@ export class Scene {
     }
 
     spin_camera(dX: number, dY: number) {
-        this.camera.eulers[2] -= dX;
         this.camera.eulers[2] %= 360;
+        this.camera.theta -= dX;
+        this.camera.theta %= 360;
 
-        this.camera.eulers[1] = Math.min(
+        this.camera.phi = Math.min(
             89, Math.max(
                 -89,
-                this.camera.eulers[1] + dY
+                this.camera.phi + dY
             )
         );
     }
