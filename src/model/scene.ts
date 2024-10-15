@@ -23,7 +23,6 @@ export class Scene {
     }
 
     spin_camera(dX: number, dY: number) {
-        this.camera.eulers[2] %= 360;
         this.camera.theta -= dX;
         this.camera.theta %= 360;
 
