@@ -33,21 +33,23 @@ export class Renderer {
         const view = renderables.view_transform;
         const projection = mat4.create();
         mat4.perspective(projection, Deg2Rad(45), 800/600, 0.1, 100);
-        const normal = Light.NormalMatrix(view, model);
+        const N_mat = Light.NormalMatrix(view, model);
+        
+        if (!this.printed) {
+            this.correctNormal(N_mat);
+            this.printInfo();
+        }
 
         /* Write to transform buffer */
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 0, <ArrayBuffer>model);
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 64, <ArrayBuffer>view);
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 128, <ArrayBuffer>projection);
-        GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 192, <ArrayBuffer>normal);
+        GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 192, <ArrayBuffer>N_mat);
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 256, <ArrayBuffer>renderables.eye_position);
         
         GPURenderContext.device.queue.writeBuffer(TetBuffers.uniqueVertsBuffer, 0, <ArrayBuffer>TetrahedralMesh.uniqueVerts);
         GPURenderContext.device.queue.writeBuffer(TetBuffers.uniqueIndexBuffer, 0, <ArrayBuffer>TetrahedralMesh.uniqueIndices);
         GPURenderContext.device.queue.writeBuffer(TetrahedralMesh.normalBuffer, 0, <ArrayBuffer>TetrahedralMesh.normalVectors);
-
-        if (!this.printed)
-            this.printInfo();
 
         //command encoder: records draw commands for submission
         const commandEncoder : GPUCommandEncoder = GPURenderContext.device.createCommandEncoder();
@@ -78,6 +80,20 @@ export class Renderer {
         renderpass.end();
 
         GPURenderContext.device.queue.submit([commandEncoder.finish()]);
+    }
+
+    correctNormal(N_mat: mat4) {
+        for (let i = 0; i < TetrahedralMesh.normalVectors.length; i+=3) {
+            var normal:vec4 = [TetrahedralMesh.normalVectors[i],
+                                TetrahedralMesh.normalVectors[i+1],
+                                TetrahedralMesh.normalVectors[i+2], 0];
+            var result: vec4 = vec4.create();
+            vec4.transformMat4(result, normal, N_mat);
+            
+            TetrahedralMesh.normalVectors[i] = result[0];
+            TetrahedralMesh.normalVectors[i+1] = result[1];
+            TetrahedralMesh.normalVectors[i+2] = result[2];
+        }
     }
 
     /* Debugging Info */
