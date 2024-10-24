@@ -35,17 +35,32 @@ export class Renderer {
         mat4.perspective(projection, Deg2Rad(45), 800/600, 0.1, 100);
         const N_mat = Light.NormalMatrix(view, model);
         
-        if (!this.printed) {
-            this.correctNormal(N_mat);
-            this.printInfo();
-        }
-
         /* Write to transform buffer */
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 0, <ArrayBuffer>model);
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 64, <ArrayBuffer>view);
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 128, <ArrayBuffer>projection);
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 192, <ArrayBuffer>N_mat);
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 256, <ArrayBuffer>renderables.eye_position);
+
+        TetrahedralMesh.uniqueVerts = new Float32Array([
+            0, 1, 0,
+            0, 0, 0,
+            1, 0, 0
+        ]);
+
+        TetrahedralMesh.uniqueIndices = new Uint32Array([
+            0, 1, 2
+        ]);
+
+        TetrahedralMesh.normalVectors = new Float32Array([
+            0, 0, 1
+        ]);
+        
+        if (!this.printed) {
+            //this.transformVerts(projection, view, model);
+            //this.correctNormal(N_mat);
+            this.printInfo();
+        }
         
         GPURenderContext.device.queue.writeBuffer(TetBuffers.uniqueVertsBuffer, 0, <ArrayBuffer>TetrahedralMesh.uniqueVerts);
         GPURenderContext.device.queue.writeBuffer(TetBuffers.uniqueIndexBuffer, 0, <ArrayBuffer>TetrahedralMesh.uniqueIndices);
@@ -80,6 +95,33 @@ export class Renderer {
         renderpass.end();
 
         GPURenderContext.device.queue.submit([commandEncoder.finish()]);
+    }
+
+    vertsClone: Float32Array;
+    transformVerts(projection: mat4, view: mat4, model: mat4) {
+        this.vertsClone = new Float32Array(TetrahedralMesh.uniqueVerts.length);
+
+        for (let i = 0; i < TetrahedralMesh.uniqueVerts.length; i+=3) {
+            var v: vec4 = vec4.create();
+            v[0] = TetrahedralMesh.uniqueVerts[i];
+            v[1] = TetrahedralMesh.uniqueVerts[i+1];
+            v[2] = TetrahedralMesh.uniqueVerts[i+2];
+            v[3] = 1;
+
+            var result: vec4 = vec4.create();
+            
+            var m1: mat4 = mat4.create();
+            mat4.multiply(m1,projection,view);
+
+            var m2: mat4 = mat4.create();
+            mat4.multiply(m2,m1,model);
+
+            vec4.transformMat4(result,v,m2);
+
+            this.vertsClone[i] = result[0];
+            this.vertsClone[i+1] = result[0];
+            this.vertsClone[i+2] = result[0];
+        }
     }
 
     correctNormal(N_mat: mat4) {

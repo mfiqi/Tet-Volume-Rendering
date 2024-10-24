@@ -1,11 +1,39 @@
 {
+    "version": "0.2.0",
     "configurations": [
-        {
-            "name": "Launch Chrome",
-            "request": "launch",
-            "type": "chrome",
-            "url": "http://127.0.0.1:8080/",
-            "webRoot": "${workspaceFolder}"
+      {
+        "name": "Launch Chrome",
+        "type": "chrome",
+        "request": "launch",
+        "url": "http://localhost:8080/index.html", // Change this to your actual URL
+        "webRoot": "${workspaceFolder}",
+        "sourceMaps": true,
+        "sourceMapPathOverrides": {
+          "webpack:///./src/*": "${workspaceFolder}/src/*"
         }
+      },
+      {
+        "name": "Launch Edge",
+        "type": "edge",
+        "request": "launch",
+        "url": "http://localhost:8080/index.html", // Change this to your actual URL
+        "webRoot": "${workspaceFolder}",
+        "sourceMaps": true,
+        "sourceMapPathOverrides": {
+          "webpack:///./src/*": "${workspaceFolder}/src/*"
+        }
+      },
+      {
+        "name": "Launch Node.js",
+        "type": "node",
+        "request": "launch",
+        "cwd": "${workspaceFolder}",
+        "runtimeExecutable": "node",
+        "program": "${workspaceFolder}/src/index.ts", // Change this to your main TypeScript file
+        "preLaunchTask": "npm: build",
+        "outFiles": [
+          "${workspaceFolder}/dist/**/*.js"
+        ]
+      }
     ]
-}
+  }

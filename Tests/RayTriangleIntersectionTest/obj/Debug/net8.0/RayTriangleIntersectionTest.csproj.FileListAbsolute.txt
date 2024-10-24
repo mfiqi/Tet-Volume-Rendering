@@ -1,0 +1,15 @@
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\bin\Debug\net8.0\RayTriangleIntersectionTest.exe
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\bin\Debug\net8.0\RayTriangleIntersectionTest.deps.json
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\bin\Debug\net8.0\RayTriangleIntersectionTest.runtimeconfig.json
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\bin\Debug\net8.0\RayTriangleIntersectionTest.dll
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\bin\Debug\net8.0\RayTriangleIntersectionTest.pdb
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\obj\Debug\net8.0\RayTriangleIntersectionTest.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\obj\Debug\net8.0\RayTriangleIntersectionTest.AssemblyInfoInputs.cache
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\obj\Debug\net8.0\RayTriangleIntersectionTest.AssemblyInfo.cs
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\obj\Debug\net8.0\RayTriangleIntersectionTest.csproj.CoreCompileInputs.cache
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\obj\Debug\net8.0\RayTriangleIntersectionTest.sourcelink.json
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\obj\Debug\net8.0\RayTriangleIntersectionTest.dll
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\obj\Debug\net8.0\refint\RayTriangleIntersectionTest.dll
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\obj\Debug\net8.0\RayTriangleIntersectionTest.pdb
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\obj\Debug\net8.0\RayTriangleIntersectionTest.genruntimeconfig.cache
+C:\Users\musab\mfiqi.github.io\Tests\RayTriangleIntersectionTest\obj\Debug\net8.0\ref\RayTriangleIntersectionTest.dll

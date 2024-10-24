@@ -12,7 +12,7 @@ export class Camera {
     right: vec3;
     up: vec3;
 
-    /*constructor(position: vec3, theta: number, phi: number) {
+    constructor(position: vec3, theta: number, phi: number) {
         this.position = position;
 
         this.up = vec3.create();
@@ -23,9 +23,9 @@ export class Camera {
 
         this.view = mat4.create();
         mat4.lookAt(this.view, this.position, centerOfInterest, this.up);
-    }*/
+    }
 
-    constructor(position: vec3, theta: number, phi: number) {
+    /*constructor(position: vec3, theta: number, phi: number) {
         this.position = position;
         this.theta = theta;
         this.phi = phi;
@@ -45,9 +45,9 @@ export class Camera {
 
         this.view = mat4.create();
         mat4.lookAt(this.view, this.position, [0.5,0.5,0.5], this.up);
-    }
+    }*/
 
-    update() {
+    /*update() {
         this.forwards = [
             Math.cos(Deg2Rad(this.theta)) * Math.cos(Deg2Rad(this.phi)),
             Math.sin(Deg2Rad(this.theta)) * Math.cos(Deg2Rad(this.phi)),
@@ -62,7 +62,7 @@ export class Camera {
         vec3.add(target, this.position, this.forwards);
         this.view = mat4.create();
         mat4.lookAt(this.view, this.position, target, this.up);
-    }
+    }*/
 
     get_view(): mat4 {
         return this.view;

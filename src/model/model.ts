@@ -1,15 +1,12 @@
 import { vec3, mat4 } from "gl-matrix";
-import { Deg2Rad } from "../model/math";
+import { Deg2Rad } from "./math";
 
-export class Cube {
-    position: vec3;
-    eulers: vec3;
+export class Model {
+    //position: vec3;
+    //eulers: vec3;
     model: mat4;
 
     constructor(position: vec3, degrees: number) {
-        this.position = position;
-        this.eulers = vec3.create();
-        this.eulers[2] = degrees;
         this.model = mat4.create();
     }
 
