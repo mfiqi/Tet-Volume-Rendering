@@ -45,8 +45,6 @@ fn vs_main(vertexInput: VertexInput) -> VertexOutput
 
     vertexOutput.Position = PVM * vec4<f32>(vertexInput.aVertexPosition, 1.0);
 
-    
-
     //transform camera and ray direction
 
     vertexOutput.camera_position = transform.camera_position;

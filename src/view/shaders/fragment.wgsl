@@ -51,6 +51,17 @@ fn ray_triangle_intersection_test(v0: vec3<f32>, v1: vec3<f32>, v2: vec3<f32>, P
     return false; 
 }
 
+
+struct TransformData {
+    model: mat4x4<f32>,
+    view: mat4x4<f32>,
+    projection: mat4x4<f32>,
+    normal: mat4x4<f32>,
+    camera_position: vec3<f32>
+};
+
+@binding(0) @group(0) var<uniform> transform: TransformData;
+
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution.html
 @fragment
 fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
@@ -79,6 +90,13 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     var v2: vec3<f32> = vec3<f32>(tVerts.verts[(t_id * 9) + 6], 
                                   tVerts.verts[(t_id * 9) + 7],
                                   tVerts.verts[(t_id * 9) + 8]);
+
+    
+    var PVM : mat4x4<f32> = transform.projection * transform.view * transform.model;
+
+    v0 = (PVM * vec4<f32>(v0,1.0)).xyz;
+    v1 = (PVM * vec4<f32>(v1,1.0)).xyz;
+    v2 = (PVM * vec4<f32>(v2,1.0)).xyz;
 
     // D is the distance from the origin to the plane
     var D: f32 = -1 * dot(N, v0);

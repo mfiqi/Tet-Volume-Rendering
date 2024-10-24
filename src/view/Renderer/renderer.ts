@@ -53,11 +53,11 @@ export class Renderer {
         ]);
 
         TetrahedralMesh.normalVectors = new Float32Array([
-            0, 0, 1
+            0, 0, -1
         ]);
         
         if (!this.printed) {
-            //this.transformVerts(projection, view, model);
+            this.transformVerts(projection, view, model);
             //this.correctNormal(N_mat);
             this.printInfo();
         }
@@ -97,9 +97,9 @@ export class Renderer {
         GPURenderContext.device.queue.submit([commandEncoder.finish()]);
     }
 
-    vertsClone: Float32Array;
+    transformedVerts: Float32Array;
     transformVerts(projection: mat4, view: mat4, model: mat4) {
-        this.vertsClone = new Float32Array(TetrahedralMesh.uniqueVerts.length);
+        this.transformedVerts = new Float32Array(TetrahedralMesh.uniqueVerts.length);
 
         for (let i = 0; i < TetrahedralMesh.uniqueVerts.length; i+=3) {
             var v: vec4 = vec4.create();
@@ -108,19 +108,17 @@ export class Renderer {
             v[2] = TetrahedralMesh.uniqueVerts[i+2];
             v[3] = 1;
 
+            var VM: mat4 = mat4.create(); 
+            mat4.multiply(VM, view, model);
+            var PVM: mat4 = mat4.create();
+            mat4.multiply(PVM, projection, VM);
+
             var result: vec4 = vec4.create();
-            
-            var m1: mat4 = mat4.create();
-            mat4.multiply(m1,projection,view);
+            vec4.transformMat4(result,v,PVM);
 
-            var m2: mat4 = mat4.create();
-            mat4.multiply(m2,m1,model);
-
-            vec4.transformMat4(result,v,m2);
-
-            this.vertsClone[i] = result[0];
-            this.vertsClone[i+1] = result[0];
-            this.vertsClone[i+2] = result[0];
+            this.transformedVerts[i] = result[0];
+            this.transformedVerts[i+1] = result[1];
+            this.transformedVerts[i+2] = result[2];
         }
     }
 
@@ -142,25 +140,18 @@ export class Renderer {
     printed: boolean = false;
     printInfo() {
         this.printed = true;
-        console.log("\nVertices\n");
-        for (let i = 0; i < TetrahedralMesh.tetVertices.length; i+=3) {
-            console.log("Vertex "+i/3+": ("+TetrahedralMesh.tetVertices[i]+","
-                                        +TetrahedralMesh.tetVertices[i+1]+","
-                                        +TetrahedralMesh.tetVertices[i+2]+")");
-        }
-
-        console.log("\nIndices\n");
-        for (let i = 0; i < TetrahedralMesh.tetShellIndices.length; i+=3) {
-            console.log("Triangle "+i/3+": ("+TetrahedralMesh.tetShellIndices[i]+","
-                                        +TetrahedralMesh.tetShellIndices[i+1]+","
-                                        +TetrahedralMesh.tetShellIndices[i+2]+")");
-        }
-
         console.log("\nUnique Vertices\n");
         for (let i = 0; i < TetrahedralMesh.uniqueVerts.length; i+=3) {
             console.log("Vertex "+i/3+": ("+TetrahedralMesh.uniqueVerts[i]+","
                                         +TetrahedralMesh.uniqueVerts[i+1]+","
                                         +TetrahedralMesh.uniqueVerts[i+2]+")");
+        }
+
+        console.log("\nTransformed Vertices\n");
+        for (let i = 0; i < this.transformedVerts.length; i+=3) {
+            console.log("Vertex "+i/3+": ("+this.transformedVerts[i]+","
+                                        +this.transformedVerts[i+1]+","
+                                        +this.transformedVerts[i+2]+")");
         }
 
         console.log("\nUnique Indices\n");
