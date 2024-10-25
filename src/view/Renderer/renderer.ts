@@ -41,24 +41,10 @@ export class Renderer {
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 128, <ArrayBuffer>projection);
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 192, <ArrayBuffer>N_mat);
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 256, <ArrayBuffer>renderables.eye_position);
-
-        TetrahedralMesh.uniqueVerts = new Float32Array([
-            0, 1, 0,
-            0, 0, 0,
-            1, 0, 0
-        ]);
-
-        TetrahedralMesh.uniqueIndices = new Uint32Array([
-            0, 1, 2
-        ]);
-
-        TetrahedralMesh.normalVectors = new Float32Array([
-            0, 0, -1
-        ]);
         
         if (!this.printed) {
             this.transformVerts(projection, view, model);
-            //this.correctNormal(N_mat);
+            this.correctNormal(N_mat);
             this.printInfo();
         }
         
@@ -147,13 +133,6 @@ export class Renderer {
                                         +TetrahedralMesh.uniqueVerts[i+2]+")");
         }
 
-        console.log("\nTransformed Vertices\n");
-        for (let i = 0; i < this.transformedVerts.length; i+=3) {
-            console.log("Vertex "+i/3+": ("+this.transformedVerts[i]+","
-                                        +this.transformedVerts[i+1]+","
-                                        +this.transformedVerts[i+2]+")");
-        }
-
         console.log("\nUnique Indices\n");
         for (let i = 0; i < TetrahedralMesh.uniqueIndices.length; i+=3) {
             console.log("Triangle "+i/3+": ("+TetrahedralMesh.uniqueIndices[i]+","
@@ -173,5 +152,8 @@ export class Renderer {
 
         console.log("\nUnique Verts Buffer\n");
         console.log(TetBuffers.uniqueVertsBuffer)
+
+
+        console.log(TetrahedralMesh.uniqueVerts.byteLength);
     }
 }

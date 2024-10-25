@@ -34,21 +34,59 @@ fn ray_plane_intersection_test(ray: vec3<f32>, planeNorm: vec3<f32>) {
 }
 
 // Determines if the intersection point falls within the triangle?
-fn ray_triangle_intersection_test(v0: vec3<f32>, v1: vec3<f32>, v2: vec3<f32>, P: vec3<f32>, N: vec3<f32>) -> bool {
-    // Performs the inside outside test
-    var edge0: vec3<f32> = v1 - v0;
-    var edge1: vec3<f32> = v2 - v1;
-    var edge2: vec3<f32> = v0 - v2;
-    var C0: vec3<f32> = P - v0;
-    var C1: vec3<f32> = P - v1;
-    var C2: vec3<f32> = P - v2;
-    if (dot(N, cross(edge0, C0)) >= 0 && 
-        dot(N, cross(edge1, C1)) >= 0 &&
-        dot(N, cross(edge2, C2)) >= 0) {
-        // P is inside the triangle
-        return true; 
-    }
-    return false; 
+// fn ray_triangle_intersection_test(v0: vec3<f32>, v1: vec3<f32>, v2: vec3<f32>, P: vec3<f32>, N: vec3<f32>) -> bool {
+//     // Performs the inside outside test
+//     var edge0: vec3<f32> = v1 - v0;
+//     var edge1: vec3<f32> = v2 - v1;
+//     var edge2: vec3<f32> = v0 - v2;
+//     var C0: vec3<f32> = P - v0;
+//     var C1: vec3<f32> = P - v1;
+//     var C2: vec3<f32> = P - v2;
+//     if (dot(N, cross(edge0, C0)) >= 0 && 
+//         dot(N, cross(edge1, C1)) >= 0 &&
+//         dot(N, cross(edge2, C2)) >= 0) {
+//         // P is inside the triangle
+//         return true; 
+//     }
+//     return false; 
+// }
+
+fn calculate_barycentric_coords(v0: vec3<f32>, v1: vec3<f32>, v2: vec3<f32>, O: vec3<f32>, D: vec3<f32>) -> vec3<f32> {
+var edge1: vec3<f32> = v1 - v0;
+    var edge2: vec3<f32> = v2 - v0;
+
+    var p: vec3<f32> = cross(D, edge2); // cross between ray_dir and edge
+    var det: f32 = dot(edge1, p);
+
+    var epsilon: f32 = 0;
+    
+    // Check if ray and triangle are parallel (det close to 0)
+    if (abs(det) < epsilon) { discard; }
+
+    var invDet: f32 = 1.0 / det; // Inverse determinant for division
+
+    var T: vec3<f32> = O - v0;
+    var u: f32 = dot(T, p) * invDet;
+
+    // If u is not in the range [0, 1], the ray does not intersect.
+    if (u < 0 || u > 1) { discard; }
+
+    var Q: vec3<f32> = cross(T, edge1);
+    var v: f32 = dot(D, Q) * invDet;
+
+    // If v is not in the range [0, 1 - u], the ray does not intersect.
+    if (v < 0 || v > 1 - u) { discard; }
+
+    var t: f32 = dot(edge2, Q) * invDet;
+
+    // If t < epsilon, the intersection is behind the ray origin
+    if (t < -epsilon) { discard; }
+
+    var P: vec3<f32> = O + t*D;
+
+    var w: f32 = 1 - u - v;
+
+    return vec3<f32>(u,v,w);
 }
 
 
@@ -67,18 +105,17 @@ struct TransformData {
 fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
 {
     var t_id = fragmentInput.triangle_id;
-    var origin: vec3<f32> = fragmentInput.eyePosition;
+
+    var O: vec3<f32> = fragmentInput.eyePosition;
 
     // Step 1: Normalize the view ray
-    var rayDir: vec3<f32> = normalize(fragmentInput.ray_direction);
+    var D: vec3<f32> = normalize(fragmentInput.ray_direction);
 
     // Use the triangle_ID to obtain the normal vector for the current triangle
-    var N: vec3<f32> = vec3<f32>(normalVectors.normal[(t_id*3)],
-                                      normalVectors.normal[(t_id*3) + 1],
-                                      normalVectors.normal[(t_id*3) + 2]);
+    //var N: vec3<f32> = vec3<f32>(normalVectors.normal[(t_id*3)], normalVectors.normal[(t_id*3) + 1], normalVectors.normal[(t_id*3) + 2]);
 
     // Checks if ray and plane intersect
-    //ray_plane_intersection_test(rayDir, N);
+    //ray_plane_intersection_test(D, N);
     
     // v0 is the first vertex in triangle with t_id, v0 is a point on the plane
     var v0: vec3<f32> = vec3<f32>(tVerts.verts[(t_id * 9)], 
@@ -91,6 +128,7 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
                                   tVerts.verts[(t_id * 9) + 7],
                                   tVerts.verts[(t_id * 9) + 8]);
 
+    return vec4<f32>((v0 + v1 + v2)/3.0,1.0);
     
     var PVM : mat4x4<f32> = transform.projection * transform.view * transform.model;
 
@@ -98,37 +136,7 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     v1 = (PVM * vec4<f32>(v1,1.0)).xyz;
     v2 = (PVM * vec4<f32>(v2,1.0)).xyz;
 
-    // D is the distance from the origin to the plane
-    var D: f32 = -1 * dot(N, v0);
+    var barycentricCoords: vec3<f32> = calculate_barycentric_coords(v0,v1,v2,O,D);
 
-    // t is the distance from the ray origin to p_hit
-    var t: f32 = -1 * (dot(N, origin) + D) / dot(N, rayDir);
-
-    // If a plane is "behind" the ray, it shouldn't be considered for an intersection.
-    // if (t < 0) {
-    //     discard; // TODO: fix this
-    // }
-
-    // Point where the ray intersects the triangle
-    var P = origin + t*rayDir;
-
-    // Test if normals is being calculated correctly
-    //if (N.x < 0.0) {N.x *= -1;}
-    //if (N.y < 0.0) {N.y *= -1;}
-    //if (N.z < 0.0) {N.z *= -1;}
-    //return vec4<f32>(N,1.0);
-
-    //if (t_id == 0) { return vec4<f32> (1.0,0.0,0.0,1.0); } // red
-    //if (t_id == 1) { return vec4<f32> (0.0,1.0,0.0,1.0); } // blue
-    //if (t_id == 2) { return vec4<f32> (0.0,0.0,1.0,1.0); } // green
-    //if (t_id == 3) { return vec4<f32> (1.0,0.0,1.0,1.0); } // pink 
-    //return vec4<f32> (1.0,1.0,1.0,1.0);
-
-    if (ray_triangle_intersection_test(v0, v1, v2, P, N)) { 
-        return vec4<f32>(1.0, 1.0, 1.0, 1.0); // white
-    } else {
-        return vec4<f32>(0.0, 1.0, 0.0, 1.0); // black
-    }
-
-    //return vec4<f32>(fragmentInput.color, 1.0);
+    return vec4<f32>(barycentricCoords,1.0);
 }

@@ -54,10 +54,10 @@ export class App {
 
         this.scene.update(false);
 
-        /*this.scene.move_camera(
+        this.scene.move_camera(
             this.forwards_amount, 
             this.right_amount
-        );*/
+        );
 
         this.renderer.render(
             this.scene.get_renderables()
@@ -72,20 +72,20 @@ export class App {
         this.keyLabel.innerText = event.code;
 
         if (event.code == "KeyW") {
-            this.scene.cube.rotateX(-10);
-            this.forwards_amount = 0.01;
+            //this.scene.cube.rotateX(-10);
+            this.forwards_amount = 0.05;
         }
         if (event.code == "KeyS") {
-            this.scene.cube.rotateX(10);
-            this.forwards_amount = -0.01;
+            //this.scene.cube.rotateX(10);
+            this.forwards_amount = -0.05;
         }
         if (event.code == "KeyA") {
-            this.scene.cube.rotateY(-10);
-            this.right_amount = -0.01;
+            //this.scene.cube.rotateY(-10);
+            this.right_amount = -0.05;
         }
         if (event.code == "KeyD") {
-            this.scene.cube.rotateY(10);
-            this.right_amount = 0.01;
+            //this.scene.cube.rotateY(10);
+            this.right_amount = 0.05;
         }
 
         if (event.code == "KeyE") {
@@ -114,6 +114,6 @@ export class App {
         this.mouseXLabel.innerText = event.clientX.toString();
         this.mouseYLabel.innerText = event.clientY.toString();
 
-        //this.scene.spin_camera(event.movementX * 0.07,event.movementY * -1 * 0.07)
+        this.scene.spin_camera(event.movementX * 0.07,event.movementY * -1 * 0.07)
     }
 }

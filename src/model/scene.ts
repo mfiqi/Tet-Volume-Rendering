@@ -12,18 +12,18 @@ export class Scene {
 
     constructor() {
         this.cube = new Model([0,0,0], 0);
-        this.camera = new Camera([0,0,-3], 0, 0);
-        //this.camera = new Camera([-5,0,0], 0, 0);
+        //this.camera = new Camera([0,0,-3], 0, 0);
+        this.camera = new Camera([-5,0,0], 0, 0);
         //this.camera = new Camera([0,18,12], 0, 0);
         this.light = new Light([2, 2, 2]);
     }
 
     update(rotate_cube: boolean) {
         this.cube.update(rotate_cube);
-        // this.camera.update();
+        this.camera.update();
     }
 
-    /*spin_camera(dX: number, dY: number) {
+    spin_camera(dX: number, dY: number) {
         this.camera.theta -= dX;
         this.camera.theta %= 360;
 
@@ -48,7 +48,7 @@ export class Scene {
             this.camera.right,
             right_amount
         );
-    }*/
+    }
 
     get_camera(): Camera {
         return this.camera;

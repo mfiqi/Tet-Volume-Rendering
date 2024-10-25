@@ -17,15 +17,67 @@ public class Program
         // t is the distance from the ray origin to p_hit
         float t = -1 * (Vector3.Dot(N, origin) + D) / Vector3.Dot(N, rayDir);
 
-        //Vector3 P = origin + t * rayDir;
+        Vector3 P = origin + t * rayDir;
 
-        //Vector3 P = new Vector3(0.5f, 0.5f, 0.0f);
-        Vector3 P = new Vector3(2.5f, 2.5f, 0.0f);
+        P = new Vector3(0.5f, 0.5f, 0.0f);
+        P = new Vector3(22.5f, 22.5f, 22.0f);
 
-        Console.WriteLine(ray_triangle_intersection_test(v0,v1,v2,P,N));
+        Console.WriteLine(RayTriangleIntersectionTest(v0,v1,v2,P,N,rayDir,origin));
     }
 
-    static bool ray_triangle_intersection_test(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 P, Vector3 N)
+    public static bool RayTriangleIntersectionTest(Vector3 v0, Vector3 v1, Vector3 v2,
+                                                   Vector3 P, Vector3 N, Vector3 D, Vector3 O)
+    {
+        // Calculate edges
+        Vector3 edge1 = v1 - v0;
+        Vector3 edge2 = v2 - v0;
+
+        // Cross product of ray direction and edge2
+        Vector3 p = Vector3.Cross(D, edge2);
+
+        // Determinant
+        float det = Vector3.Dot(edge1, p);
+
+        float epsilon = 1e-8f;
+
+        // Check if ray and triangle are parallel
+        if (Math.Abs(det) < epsilon)
+        {
+            return false;
+        }
+
+        // Inverse determinant
+        float invDet = 1.0f / det;
+
+        // Vector from vertex 0 to ray origin
+        Vector3 T = O - v0;
+
+        // Calculate u parameter and test bounds
+        float u = Vector3.Dot(T, p) * invDet;
+        if (u < 0 || u > 1)
+        {
+            return false;
+        }
+
+        // Prepare to test v parameter
+        Vector3 Q = Vector3.Cross(T, edge1);
+        float v = Vector3.Dot(D, Q) * invDet;
+        if (v < 0 || v > 1 - u)
+        {
+            return false;
+        }
+
+        // Calculate t, ray intersects triangle if t > epsilon
+        float t = Vector3.Dot(edge2, Q) * invDet;
+        if (t < -epsilon)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /*static bool ray_triangle_intersection_test(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 P, Vector3 N)
     {
         Vector3 edge0 = v1 - v0;
         Vector3 edge1 = v2 - v1;
@@ -44,5 +96,5 @@ public class Program
         }
 
         return false;
-    }
+    }*/
 }
