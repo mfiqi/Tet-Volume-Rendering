@@ -41,8 +41,45 @@ export class Renderer {
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 128, <ArrayBuffer>projection);
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 192, <ArrayBuffer>N_mat);
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 256, <ArrayBuffer>renderables.eye_position);
-        
+
+        /*TetrahedralMesh.uniqueVerts = new Float32Array([
+            0,1,0,
+            0,0,1,
+            0,0,0
+        ]);
+
+        TetrahedralMesh.uniqueIndices = new Uint32Array([
+            0,1,2
+        ]);*/
+
+        /*TetrahedralMesh.uniqueVerts = new Float32Array([
+            1,0,0,
+            0,1,0,
+            0,0,1,
+            0,0,0,
+            0,0,1,
+            0,0,0
+        ]);
+
+        TetrahedralMesh.uniqueIndices = new Uint32Array([
+            1,2,3,
+            0,4,5
+        ]);*/
+
         if (!this.printed) {
+
+            var verts: Float32Array = new Float32Array(TetrahedralMesh.uniqueVerts);
+            var j: number = 0;
+    
+            for (let i = 0; i < TetrahedralMesh.uniqueIndices.length; i++) {
+                var v_id: number = TetrahedralMesh.uniqueIndices[i];
+                TetrahedralMesh.uniqueIndices[i] = i;
+                verts[j++] = TetrahedralMesh.uniqueVerts[v_id * 3];
+                verts[j++] = TetrahedralMesh.uniqueVerts[v_id * 3 + 1];
+                verts[j++] = TetrahedralMesh.uniqueVerts[v_id * 3 + 2];
+            }
+            TetrahedralMesh.uniqueVerts = new Float32Array(verts);
+            
             this.transformVerts(projection, view, model);
             this.correctNormal(N_mat);
             this.printInfo();

@@ -136,6 +136,14 @@ export class SetupRenderer {
                         type: "read-only-storage",
                         hasDynamicOffset: false
                     }
+                },
+                {
+                    binding: 3,
+                    visibility: GPUShaderStage.VERTEX,
+                    buffer: {
+                        type: "read-only-storage",
+                        hasDynamicOffset: false
+                    }
                 }
             ]
         });
@@ -202,6 +210,12 @@ export class SetupRenderer {
                     resource: {
                         buffer: TetBuffers.uniqueVertsBuffer
                     },
+                },
+                {
+                    binding: 3,
+                    resource: {
+                        buffer: TetBuffers.uniqueIndexBuffer
+                    }
                 }
             ]
         });

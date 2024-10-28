@@ -104,7 +104,7 @@ struct TransformData {
 @fragment
 fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
 {
-    var t_id = fragmentInput.triangle_id;
+    var t_id: u32 = fragmentInput.triangle_id;
 
     var O: vec3<f32> = fragmentInput.eyePosition;
 
@@ -112,10 +112,10 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     var D: vec3<f32> = normalize(fragmentInput.ray_direction);
 
     // Use the triangle_ID to obtain the normal vector for the current triangle
-    //var N: vec3<f32> = vec3<f32>(normalVectors.normal[(t_id*3)], normalVectors.normal[(t_id*3) + 1], normalVectors.normal[(t_id*3) + 2]);
+    var N: vec3<f32> = vec3<f32>(normalVectors.normal[(t_id*3)], normalVectors.normal[(t_id*3) + 1], normalVectors.normal[(t_id*3) + 2]);
 
     // Checks if ray and plane intersect
-    //ray_plane_intersection_test(D, N);
+    ray_plane_intersection_test(D, N);
     
     // v0 is the first vertex in triangle with t_id, v0 is a point on the plane
     var v0: vec3<f32> = vec3<f32>(tVerts.verts[(t_id * 9)], 
@@ -128,7 +128,7 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
                                   tVerts.verts[(t_id * 9) + 7],
                                   tVerts.verts[(t_id * 9) + 8]);
 
-    return vec4<f32>((v0 + v1 + v2)/3.0,1.0);
+    //return vec4<f32>((v0 + v1 + v2)/3.0,1.0);
     
     var PVM : mat4x4<f32> = transform.projection * transform.view * transform.model;
 
