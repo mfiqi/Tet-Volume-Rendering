@@ -33,7 +33,9 @@ export class SetupRenderer {
     }
 
     async readTetMesh() {
-        const fileUrl = 'https://raw.githubusercontent.com/mfiqi/mfiqi.github.io/refs/heads/Cleaning_Tetrahedral_Mesh_Code/dist/data/single.txt';
+        const fileUrl = 'https://raw.githubusercontent.com/mfiqi/mfiqi.github.io/refs/heads/Cleaning_Tetrahedral_Mesh_Code/dist/data/tetmesh.txt';
+
+        console.log(fileUrl);
 
         await ReadFile.readTetMeshFile(fileUrl);
         ExtractShell.extract(GPURenderContext.device);
