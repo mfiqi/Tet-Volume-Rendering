@@ -67,9 +67,9 @@ export class Renderer {
         ]);*/
 
         if (!this.printed) {
+            this.printInfo();
             this.rearrangeVerts();
             this.correctNormal(N_mat);
-            this.printInfo();
         }
         
         GPURenderContext.device.queue.writeBuffer(TetBuffers.uniqueVertsBuffer, 0, <ArrayBuffer>TetrahedralMesh.uniqueVerts);
@@ -139,6 +139,30 @@ export class Renderer {
     printed: boolean = false;
     printInfo() {
         this.printed = true;
+        
+        console.log("\nTet Vertices\n");
+        for (let i = 0; i < TetrahedralMesh.tetVertices.length; i+=3) {
+            console.log("Vertex "+i/3+": ("+TetrahedralMesh.tetVertices[i]+","
+                                        +TetrahedralMesh.tetVertices[i+1]+","
+                                        +TetrahedralMesh.tetVertices[i+2]+")");
+        }
+
+        console.log("\nTet Indices\n");
+        console.log(TetrahedralMesh.tetIndices.length);
+        for (let i = 0; i < TetrahedralMesh.tetIndices.length; i+=4) {
+            console.log("Vertex "+i/3+": ("+TetrahedralMesh.tetIndices[i]+","
+                                        +TetrahedralMesh.tetIndices[i+1]+","
+                                        +TetrahedralMesh.tetIndices[i+2]+","
+                                        +TetrahedralMesh.tetIndices[i+3]+")");
+        }
+
+        console.log("\nTet Shell Indices\n");
+        for (let i = 0; i < TetrahedralMesh.tetShellIndices.length; i+=3) {
+            console.log("Vertex "+i/3+": ("+TetrahedralMesh.tetShellIndices[i]+","
+                                        +TetrahedralMesh.tetShellIndices[i+1]+","
+                                        +TetrahedralMesh.tetShellIndices[i+2]+")");
+        }
+
         console.log("\nUnique Vertices\n");
         for (let i = 0; i < TetrahedralMesh.uniqueVerts.length; i+=3) {
             console.log("Vertex "+i/3+": ("+TetrahedralMesh.uniqueVerts[i]+","
@@ -152,21 +176,5 @@ export class Renderer {
                                         +TetrahedralMesh.uniqueIndices[i+1]+","
                                         +TetrahedralMesh.uniqueIndices[i+2]+")");
         }
-
-        console.log("\nNormal Vectors\n");
-        for (let i = 0; i < TetrahedralMesh.normalVectors.length; i+=3) {
-            console.log("Normal "+i/3+": ("+TetrahedralMesh.normalVectors[i]+","
-                                        +TetrahedralMesh.normalVectors[i+1]+","
-                                        +TetrahedralMesh.normalVectors[i+2]+")");
-        }
-
-        console.log("\nIndices Lnegth\n");
-        console.log(TetrahedralMesh.uniqueIndices.length);
-
-        console.log("\nUnique Verts Buffer\n");
-        console.log(TetBuffers.uniqueVertsBuffer)
-
-
-        console.log(TetrahedralMesh.uniqueVerts.byteLength);
     }
 }
