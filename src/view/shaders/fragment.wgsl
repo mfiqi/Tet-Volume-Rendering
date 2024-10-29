@@ -51,7 +51,7 @@ fn ray_plane_intersection_test(ray: vec3<f32>, planeNorm: vec3<f32>) {
 //     return false; 
 // }
 
-fn calculate_barycentric_coords(v0: vec3<f32>, v1: vec3<f32>, v2: vec3<f32>, O: vec3<f32>, D: vec3<f32>) -> vec3<f32> {
+fn calculate_barycentric_coords(v0: vec3<f32>, v1: vec3<f32>, v2: vec3<f32>, O: vec3<f32>, D: vec3<f32>) -> vec4<f32> {
 var edge1: vec3<f32> = v1 - v0;
     var edge2: vec3<f32> = v2 - v0;
 
@@ -86,7 +86,7 @@ var edge1: vec3<f32> = v1 - v0;
 
     var w: f32 = 1 - u - v;
 
-    return vec3<f32>(u,v,w);
+    return vec4<f32>(u,v,w,t);
 }
 
 
@@ -127,16 +127,26 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     var v2: vec3<f32> = vec3<f32>(tVerts.verts[(t_id * 9) + 6], 
                                   tVerts.verts[(t_id * 9) + 7],
                                   tVerts.verts[(t_id * 9) + 8]);
-
-    //return vec4<f32>((v0 + v1 + v2)/3.0,1.0);
     
     var PVM : mat4x4<f32> = transform.projection * transform.view * transform.model;
 
+    // Correct the vertices
     v0 = (PVM * vec4<f32>(v0,1.0)).xyz;
     v1 = (PVM * vec4<f32>(v1,1.0)).xyz;
     v2 = (PVM * vec4<f32>(v2,1.0)).xyz;
 
-    var barycentricCoords: vec3<f32> = calculate_barycentric_coords(v0,v1,v2,O,D);
+    var barycentricCoords: vec4<f32> = calculate_barycentric_coords(v0,v1,v2,O,D);
 
-    return vec4<f32>(barycentricCoords,1.0);
+    // Obtain first intersection point
+    var t: f32 = barycentricCoords.w;
+    var P: vec3<f32> = O + t*D; // Intersection point
+
+    // Check other triangles of the same tetrehedron for the "exit point" of the tet and which triangle_id it is
+    
+    // TODO: Step 1: Find Tetrahedron ID based on Triangle ID
+    // TODO: Step 2: Get the other 3 Triangles of the tetrahedron
+    // TODO: Step 3: Test ray-triangle intersection for the 3 triangles and find new "entrance point"
+    // TODO: Step 3.5: Count the number of intersections
+
+    return vec4<f32>(barycentricCoords.xyz,1.0);
 }

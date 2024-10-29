@@ -67,20 +67,7 @@ export class Renderer {
         ]);*/
 
         if (!this.printed) {
-
-            var verts: Float32Array = new Float32Array(TetrahedralMesh.uniqueVerts);
-            var j: number = 0;
-    
-            for (let i = 0; i < TetrahedralMesh.uniqueIndices.length; i++) {
-                var v_id: number = TetrahedralMesh.uniqueIndices[i];
-                TetrahedralMesh.uniqueIndices[i] = i;
-                verts[j++] = TetrahedralMesh.uniqueVerts[v_id * 3];
-                verts[j++] = TetrahedralMesh.uniqueVerts[v_id * 3 + 1];
-                verts[j++] = TetrahedralMesh.uniqueVerts[v_id * 3 + 2];
-            }
-            TetrahedralMesh.uniqueVerts = new Float32Array(verts);
-            
-            this.transformVerts(projection, view, model);
+            this.rearrangeVerts();
             this.correctNormal(N_mat);
             this.printInfo();
         }
@@ -120,29 +107,18 @@ export class Renderer {
         GPURenderContext.device.queue.submit([commandEncoder.finish()]);
     }
 
-    transformedVerts: Float32Array;
-    transformVerts(projection: mat4, view: mat4, model: mat4) {
-        this.transformedVerts = new Float32Array(TetrahedralMesh.uniqueVerts.length);
-
-        for (let i = 0; i < TetrahedralMesh.uniqueVerts.length; i+=3) {
-            var v: vec4 = vec4.create();
-            v[0] = TetrahedralMesh.uniqueVerts[i];
-            v[1] = TetrahedralMesh.uniqueVerts[i+1];
-            v[2] = TetrahedralMesh.uniqueVerts[i+2];
-            v[3] = 1;
-
-            var VM: mat4 = mat4.create(); 
-            mat4.multiply(VM, view, model);
-            var PVM: mat4 = mat4.create();
-            mat4.multiply(PVM, projection, VM);
-
-            var result: vec4 = vec4.create();
-            vec4.transformMat4(result,v,PVM);
-
-            this.transformedVerts[i] = result[0];
-            this.transformedVerts[i+1] = result[1];
-            this.transformedVerts[i+2] = result[2];
+    /* Rearranges verts and indices as to correctly identify triangle ids in vertex shader */
+    rearrangeVerts() {
+        var verts: Float32Array = new Float32Array(TetrahedralMesh.uniqueVerts);
+        var j: number = 0;
+        for (let i = 0; i < TetrahedralMesh.uniqueIndices.length; i++) {
+            var v_id: number = TetrahedralMesh.uniqueIndices[i];
+            TetrahedralMesh.uniqueIndices[i] = i;
+            verts[j++] = TetrahedralMesh.uniqueVerts[v_id * 3];
+            verts[j++] = TetrahedralMesh.uniqueVerts[v_id * 3 + 1];
+            verts[j++] = TetrahedralMesh.uniqueVerts[v_id * 3 + 2];
         }
+        TetrahedralMesh.uniqueVerts = new Float32Array(verts);
     }
 
     correctNormal(N_mat: mat4) {
