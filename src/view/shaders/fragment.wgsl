@@ -131,6 +131,14 @@ fn get_tetrahedron_vertices(tetrahedron_id: u32) -> array<f32,36> {
     return tetrahedronVertices;
 }
 
+fn find_new_entrance_point(tetrahedronVertices: array<f32, 36>, triangleID: u32) {
+    var currentTriangle: u32 = triangleID % 4;
+}
+
+fn find_next_tetrahedron() {
+    
+}
+
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution.html
 @fragment
 fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
@@ -184,6 +192,7 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     var tetrahedronVertices: array<f32, 36> = get_tetrahedron_vertices(tetrahedron_id);
     
     // TODO: Step 3: Test ray-triangle intersection for the 3 triangles and find new "entrance point"
+
     var intersections: u32 = 1;
 
     // We don't need to retest the current triangle
@@ -205,7 +214,7 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
             
             // SETTING ORIGIN TO BE THE PREVIOUS POINT!
             //O = P; // TODO: Is this correct?
-            if (ray_triangle_intersection_test(v0,v1,v2,O,D)) {
+            while (ray_triangle_intersection_test(v0,v1,v2,O,D)) {
                 barycentricCoords = calculate_barycentric_coords(v0,v1,v2,O,D); // new barycentric coords
                 t = barycentricCoords.w;
                 P = O + t*D; // new entrance point
@@ -218,8 +227,10 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
 
     if (intersections == 1) {
         return vec4<f32>(1.0,0.0,0.0,1.0);
-    } else {
+    } else if (intersections == 2) {
         return vec4<f32>(0.0,1.0,0.0,1.0);
+    } else {
+        return vec4<f32>(0.0,0.0,1.0,1.0);
     }
 
     // TODO: Step 3.5: Count the number of intersections
