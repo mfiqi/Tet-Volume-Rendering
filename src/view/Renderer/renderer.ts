@@ -67,8 +67,8 @@ export class Renderer {
         ]);*/
 
         if (!this.printed) {
-            this.printInfo();
             this.rearrangeVerts();
+            this.printInfo();
             this.correctNormal(N_mat);
         }
         
