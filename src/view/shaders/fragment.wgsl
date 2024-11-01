@@ -215,24 +215,15 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
             // SETTING ORIGIN TO BE THE PREVIOUS POINT!
             //O = P; // TODO: Is this correct?
             while (ray_triangle_intersection_test(v0,v1,v2,O,D)) {
-                barycentricCoords = calculate_barycentric_coords(v0,v1,v2,O,D); // new barycentric coords
-                t = barycentricCoords.w;
-                P = O + t*D; // new entrance point
+                //barycentricCoords = calculate_barycentric_coords(v0,v1,v2,O,D); // new barycentric coords
+                //t = barycentricCoords.w;
+                //P = O + t*D; // new entrance point
 
                 intersections++;
                 break; // TODO: Ray can only intersect with a single triangle correct?
             }
         }
     }
-
-    if (intersections == 1) {
-        return vec4<f32>(1.0,0.0,0.0,1.0);
-    } else if (intersections == 2) {
-        return vec4<f32>(0.0,1.0,0.0,1.0);
-    } else {
-        return vec4<f32>(0.0,0.0,1.0,1.0);
-    }
-
     // TODO: Step 3.5: Count the number of intersections
 
     return vec4<f32>(barycentricCoords.xyz,1.0);

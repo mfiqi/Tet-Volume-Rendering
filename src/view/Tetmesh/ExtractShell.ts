@@ -3,6 +3,8 @@ import { TetrahedralMesh } from "./TetrahedralMesh";
 
 export class ExtractShell {
     /* TODO: Rewrite this function entirely to make it more readable */
+
+    /* Needed for surface represenation only! */
     static extract(device: GPUDevice) {
         // Use a dynamic array to collect shell faces
         const shellIndices: number[] = [];
@@ -38,7 +40,8 @@ export class ExtractShell {
     
         // Filter out the boundary faces
         faceMap.forEach((count, key) => {
-            if (count === 1) {
+            if (true) {
+            //if (count === 1) {
                 const indices = key.split('-').map(Number);
                 shellIndices.push(...indices);
             }

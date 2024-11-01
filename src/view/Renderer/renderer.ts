@@ -42,6 +42,9 @@ export class Renderer {
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 192, <ArrayBuffer>N_mat);
         GPURenderContext.device.queue.writeBuffer(GPURenderContext.transformBuffer, 256, <ArrayBuffer>renderables.eye_position);
 
+        // TODO: Create a list the maps triangles to their respective tetrahedrons
+        // TODO: Create a list that maps tetrahedrons to their triangles
+
         /*TetrahedralMesh.uniqueVerts = new Float32Array([
             0,1,0,
             0,0,1,
@@ -150,7 +153,7 @@ export class Renderer {
         console.log("\nTet Indices\n");
         console.log(TetrahedralMesh.tetIndices.length);
         for (let i = 0; i < TetrahedralMesh.tetIndices.length; i+=4) {
-            console.log("Vertex "+i/3+": ("+TetrahedralMesh.tetIndices[i]+","
+            console.log("Vertex "+i/4+": ("+TetrahedralMesh.tetIndices[i]+","
                                         +TetrahedralMesh.tetIndices[i+1]+","
                                         +TetrahedralMesh.tetIndices[i+2]+","
                                         +TetrahedralMesh.tetIndices[i+3]+")");
