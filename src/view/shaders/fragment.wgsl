@@ -136,7 +136,7 @@ fn find_new_entrance_point(tetrahedronVertices: array<f32, 36>, triangleID: u32)
     var currentTriangle: u32 = triangleID % 4;
 }
 
-fn find_exit_triangle(triangleID: u32, tetID: u32, O: vec3<f32>, D: vec3<f32>) -> u32{
+fn find_exit_triangle(triangleID: u32, tetID: u32, O: vec3<f32>, D: vec3<f32>) -> vec4<f32>{
     // We don't need to retest the current triangle
     var currentTriangle: u32 = triangleID % 4;
 
@@ -163,12 +163,14 @@ fn find_exit_triangle(triangleID: u32, tetID: u32, O: vec3<f32>, D: vec3<f32>) -
 
             // TODO: Ray can only intersect with a single triangle correct?
             if (ray_triangle_intersection_test(v0,v1,v2,O,D)) {
-                break; 
+                return vec4<f32>(calculate_barycentric_coords(v0,v1,v2,O,D).xyz,1.0);
+                //break; 
             }
         }
     }
 
-    return tid;
+
+    return vec4<f32>(1.0,1.0,1.0,1.0);
 }
 
 
@@ -234,24 +236,28 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
 
     // TODO: Step 2: Get the other 3 Triangles of the tetrahedron
     var tetrahedron_size: u32 = 36;
-    var tetrahedronVertices: array<f32, 36> = get_tetrahedron_vertices(tetrahedron_id);
+    //var tetrahedronVertices: array<f32, 36> = get_tetrahedron_vertices(tetrahedron_id);
     
     var intersections: u32 = 1;
+    
+    return find_exit_triangle(t_id, tetrahedron_id, O, D);
 
-    // TODO: Step 3: Test ray-triangle intersection for the 3 triangles and find new "entrance point"
-    while (true) {
-        t_id = find_exit_triangle(t_id, tetrahedron_id, O, D);
-
-        // if next tet is -1, the ray has exited the mesh and final colors can be shown
-        var tetID: i32 = find_next_tetrahedron(t_id);
-        if (tetID == -1) {
-            break;
-        }
-        intersections++;
-    }
-
-    // TODO: Step 3.5: Count the number of intersections and show that as color on screen
-
-    return vec4<f32>(0.1 * f32(intersections), 0.0, 0.0, 1.0);
+//     // TODO: Step 3: Test ray-triangle intersection for the 3 triangles and find new "entrance point"
+//     while (true) {
+//         t_id = find_exit_triangle(t_id, tetrahedron_id, O, D);
+// 
+//         break;
+//         // if next tet is -1, the ray has exited the mesh and final colors can be shown
+//         var tetID: i32 = find_next_tetrahedron(t_id);
+//         tetrahedron_id = u32(tetID);
+//         if (tetID == -1) {
+//             break;
+//         }
+//         intersections++;
+//     }
+// 
+//     // TODO: Step 3.5: Count the number of intersections and show that as color on screen
+// 
+//     return vec4<f32>(0.25 * f32(intersections), 0.0, 0.0, 1.0);
     //return vec4<f32>(barycentricCoords.xyz,1.0);
 }
