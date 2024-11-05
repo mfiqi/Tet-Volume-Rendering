@@ -1,3 +1,4 @@
+import { ExtractShell } from "./ExtractShell";
 import { TetrahedralMesh } from "./TetrahedralMesh";
 
 export class TetBuffers {
@@ -11,6 +12,8 @@ export class TetBuffers {
 
     static vertexBufferLayout: GPUVertexBufferLayout;
     static colorBufferLayout: GPUVertexBufferLayout;
+
+    static triangle_tet_arr_buffer: GPUBuffer;
 
     static createBufferLayout() {
         this.vertexBufferLayout = {
@@ -59,6 +62,17 @@ export class TetBuffers {
         TetBuffers.uniqueVertsBuffer.unmap();
     }
 
+    static setuptriangleTetMapBuffer(device: GPUDevice) {
+        TetBuffers.triangle_tet_arr_buffer = device.createBuffer({
+            size: ExtractShell.triangle_tet_arr.byteLength,
+            usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+            mappedAtCreation: true
+        });
+
+        new Int32Array(TetBuffers.triangle_tet_arr_buffer.getMappedRange()).set(ExtractShell.triangle_tet_arr);
+        TetBuffers.triangle_tet_arr_buffer.unmap();
+    }
+
 
     static async createTetBuffers(device: GPUDevice) {
         this.tetVertsBuffer = device.createBuffer({
@@ -84,5 +98,6 @@ export class TetBuffers {
 
         this.setupUniqueIndexBuffer(device);
         this.setupUniqueVertsBuffer(device);
+        this.setuptriangleTetMapBuffer(device);
     }
 }

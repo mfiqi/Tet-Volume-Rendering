@@ -121,6 +121,7 @@ export class Renderer {
             verts[j++] = TetrahedralMesh.uniqueVerts[v_id * 3 + 1];
             verts[j++] = TetrahedralMesh.uniqueVerts[v_id * 3 + 2];
         }
+
         TetrahedralMesh.uniqueVerts = new Float32Array(verts);
     }
 
@@ -153,7 +154,7 @@ export class Renderer {
         console.log("\nTet Indices\n");
         console.log(TetrahedralMesh.tetIndices.length);
         for (let i = 0; i < TetrahedralMesh.tetIndices.length; i+=4) {
-            console.log("Vertex "+i/4+": ("+TetrahedralMesh.tetIndices[i]+","
+            console.log("Tetrahedron "+i/4+": ("+TetrahedralMesh.tetIndices[i]+","
                                         +TetrahedralMesh.tetIndices[i+1]+","
                                         +TetrahedralMesh.tetIndices[i+2]+","
                                         +TetrahedralMesh.tetIndices[i+3]+")");
@@ -161,7 +162,7 @@ export class Renderer {
 
         console.log("\nTet Shell Indices\n");
         for (let i = 0; i < TetrahedralMesh.tetShellIndices.length; i+=3) {
-            console.log("Vertex "+i/3+": ("+TetrahedralMesh.tetShellIndices[i]+","
+            console.log("Triangle "+i/3+": ("+TetrahedralMesh.tetShellIndices[i]+","
                                         +TetrahedralMesh.tetShellIndices[i+1]+","
                                         +TetrahedralMesh.tetShellIndices[i+2]+")");
         }
@@ -179,5 +180,6 @@ export class Renderer {
                                         +TetrahedralMesh.uniqueIndices[i+1]+","
                                         +TetrahedralMesh.uniqueIndices[i+2]+")");
         }
+
     }
 }

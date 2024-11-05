@@ -35,6 +35,7 @@ struct TriangleVerts {
 };
 @binding(2) @group(0) var<storage, read> tVerts: TriangleVerts;
 
+
 // Determines if the ray intersects the plane defined by the triangle normal
 fn ray_plane_intersection_test(ray: vec3<f32>, planeNorm: vec3<f32>) {
     // If the ray and the plane are parallel, they will not intersect so we will discard pixel
@@ -135,8 +136,49 @@ fn find_new_entrance_point(tetrahedronVertices: array<f32, 36>, triangleID: u32)
     var currentTriangle: u32 = triangleID % 4;
 }
 
-fn find_next_tetrahedron() {
+fn find_exit_triangle(triangleID: u32, tetID: u32, O: vec3<f32>, D: vec3<f32>) -> u32{
+    // We don't need to retest the current triangle
+    var currentTriangle: u32 = triangleID % 4;
+
+    var tid: u32 = (tetID*4)+currentTriangle; // NOTE! this is just a default value, should always be overwritten
+
     
+    var tetrahedronVertices: array<f32, 36> = get_tetrahedron_vertices(tetID);
+
+    for (var i: u32 = 0; i<4; i=i+1) {
+        if (i == currentTriangle) {
+            continue;
+        } else {
+            tid = (tetID*4)+i;
+
+            var v0:vec3<f32> = vec3<f32>(tetrahedronVertices[i], 
+                           tetrahedronVertices[i+1], 
+                           tetrahedronVertices[i+2]);
+            var v1:vec3<f32> = vec3<f32>(tetrahedronVertices[i+3], 
+                           tetrahedronVertices[i+4], 
+                           tetrahedronVertices[i+5]);
+            var v2:vec3<f32> = vec3<f32>(tetrahedronVertices[i+6], 
+                           tetrahedronVertices[i+7], 
+                           tetrahedronVertices[i+8]);
+
+            // TODO: Ray can only intersect with a single triangle correct?
+            if (ray_triangle_intersection_test(v0,v1,v2,O,D)) {
+                break; 
+            }
+        }
+    }
+
+    return tid;
+}
+
+
+struct TriangleTetMap {
+    tet_ids: array<i32>
+};
+@binding(4) @group(0) var<storage, read> tet: TriangleTetMap;
+
+fn find_next_tetrahedron(triangle_id: u32) -> i32 {
+    return tet.tet_ids[(triangle_id*2) + 1];
 }
 
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution.html
@@ -145,6 +187,9 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
 {
     // Triangle_ID
     var t_id: u32 = fragmentInput.triangle_id;
+
+    // TODO: if two triangles are on each other, there is no intersection? 
+    //if (t_id != 3 || t_id != 7) {discard;}
 
     var O: vec3<f32> = fragmentInput.eyePosition;
 
@@ -191,40 +236,22 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     var tetrahedron_size: u32 = 36;
     var tetrahedronVertices: array<f32, 36> = get_tetrahedron_vertices(tetrahedron_id);
     
-    // TODO: Step 3: Test ray-triangle intersection for the 3 triangles and find new "entrance point"
-
     var intersections: u32 = 1;
 
-    // We don't need to retest the current triangle
-    var currentTriangle: u32 = t_id % 4;
+    // TODO: Step 3: Test ray-triangle intersection for the 3 triangles and find new "entrance point"
+    while (true) {
+        t_id = find_exit_triangle(t_id, tetrahedron_id, O, D);
 
-    for (var i: u32 = 0; i<4; i=i+1) {
-        if (i == currentTriangle) {
-            continue;
-        } else {
-            v0 = vec3<f32>(tetrahedronVertices[i], 
-                           tetrahedronVertices[i+1], 
-                           tetrahedronVertices[i+2]);
-            v1 = vec3<f32>(tetrahedronVertices[i+3], 
-                           tetrahedronVertices[i+4], 
-                           tetrahedronVertices[i+5]);
-            v2 = vec3<f32>(tetrahedronVertices[i+6], 
-                           tetrahedronVertices[i+7], 
-                           tetrahedronVertices[i+8]);
-            
-            // SETTING ORIGIN TO BE THE PREVIOUS POINT!
-            //O = P; // TODO: Is this correct?
-            while (ray_triangle_intersection_test(v0,v1,v2,O,D)) {
-                //barycentricCoords = calculate_barycentric_coords(v0,v1,v2,O,D); // new barycentric coords
-                //t = barycentricCoords.w;
-                //P = O + t*D; // new entrance point
-
-                intersections++;
-                break; // TODO: Ray can only intersect with a single triangle correct?
-            }
+        // if next tet is -1, the ray has exited the mesh and final colors can be shown
+        var tetID: i32 = find_next_tetrahedron(t_id);
+        if (tetID == -1) {
+            break;
         }
+        intersections++;
     }
-    // TODO: Step 3.5: Count the number of intersections
 
-    return vec4<f32>(barycentricCoords.xyz,1.0);
+    // TODO: Step 3.5: Count the number of intersections and show that as color on screen
+
+    return vec4<f32>(0.1 * f32(intersections), 0.0, 0.0, 1.0);
+    //return vec4<f32>(barycentricCoords.xyz,1.0);
 }

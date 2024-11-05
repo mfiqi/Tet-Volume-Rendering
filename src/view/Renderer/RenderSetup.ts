@@ -33,7 +33,7 @@ export class SetupRenderer {
     }
 
     async readTetMesh() {
-        const fileUrl = 'https://raw.githubusercontent.com/mfiqi/mfiqi.github.io/refs/heads/Cleaning_Tetrahedral_Mesh_Code/dist/data/single.txt';
+        const fileUrl = 'https://raw.githubusercontent.com/mfiqi/mfiqi.github.io/refs/heads/Cleaning_Tetrahedral_Mesh_Code/dist/data/double.txt';
 
         console.log(fileUrl);
 
@@ -146,6 +146,14 @@ export class SetupRenderer {
                         type: "read-only-storage",
                         hasDynamicOffset: false
                     }
+                },
+                {
+                    binding: 4,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    buffer: {
+                        type: "read-only-storage",
+                        hasDynamicOffset: false
+                    }
                 }
             ]
         });
@@ -217,6 +225,12 @@ export class SetupRenderer {
                     binding: 3,
                     resource: {
                         buffer: TetBuffers.uniqueIndexBuffer
+                    }
+                },
+                {
+                    binding: 4,
+                    resource: {
+                        buffer: TetBuffers.triangle_tet_arr_buffer
                     }
                 }
             ]
