@@ -120,14 +120,12 @@ var edge1: vec3<f32> = v1 - v0;
 // Returns the vertices associated with tetrahedron_id
 fn get_tetrahedron_vertices(tetrahedron_id: u32) -> array<f32,36> {
     var tetrahedronVertices: array<f32, 36>;
-    // Explanation: 
-    // (tetrahedron_id * 12) Gets the location of the current tetrahedron
-    // (triangle * 9) Gets the location of the current triangle
-    for (var i: u32 = 0; i<36; i=i+3) {
-        var triangle: u32 = i/3;
-        tetrahedronVertices[i] =   tVerts.verts[(tetrahedron_id * 12) + (triangle * 9)+(i)];
-        tetrahedronVertices[i+1] = tVerts.verts[(tetrahedron_id * 12) + (triangle * 9)+(i+1)];
-        tetrahedronVertices[i+2] = tVerts.verts[(tetrahedron_id * 12) + (triangle * 9)+(i+2)];
+    for (var i: u32 = 0; i < 36; i = i + 3) {
+        var triangle: u32 = i / 3;
+        var baseOffset: u32 = (tetrahedron_id * 12) + (triangle * 9); 
+        tetrahedronVertices[i] = tVerts.verts[baseOffset];
+        tetrahedronVertices[i + 1] = tVerts.verts[baseOffset + 1];
+        tetrahedronVertices[i + 2] = tVerts.verts[baseOffset + 2];
     }
     return tetrahedronVertices;
 }
@@ -145,6 +143,10 @@ fn find_exit_triangle(triangleID: u32, tetID: u32, O: vec3<f32>, D: vec3<f32>) -
     
     var tetrahedronVertices: array<f32, 36> = get_tetrahedron_vertices(tetID);
 
+    if (tetID == 0) {
+        return vec4<f32>(0.0,1.0,0.0,1.0);
+    }
+
     for (var i: u32 = 0; i<4; i=i+1) {
         if (i == currentTriangle) {
             continue;
@@ -152,18 +154,18 @@ fn find_exit_triangle(triangleID: u32, tetID: u32, O: vec3<f32>, D: vec3<f32>) -
             tid = (tetID*4)+i;
 
             var v0:vec3<f32> = vec3<f32>(tetrahedronVertices[i], 
-                           tetrahedronVertices[i+1], 
-                           tetrahedronVertices[i+2]);
+                                         tetrahedronVertices[i+1], 
+                                         tetrahedronVertices[i+2]);
             var v1:vec3<f32> = vec3<f32>(tetrahedronVertices[i+3], 
-                           tetrahedronVertices[i+4], 
-                           tetrahedronVertices[i+5]);
+                                         tetrahedronVertices[i+4], 
+                                         tetrahedronVertices[i+5]);
             var v2:vec3<f32> = vec3<f32>(tetrahedronVertices[i+6], 
-                           tetrahedronVertices[i+7], 
-                           tetrahedronVertices[i+8]);
+                                         tetrahedronVertices[i+7], 
+                                         tetrahedronVertices[i+8]);
 
             // TODO: Ray can only intersect with a single triangle correct?
             if (ray_triangle_intersection_test(v0,v1,v2,O,D)) {
-                return vec4<f32>(calculate_barycentric_coords(v0,v1,v2,O,D).xyz,1.0);
+                return vec4<f32>(1.0,0.0,0.0,1.0);
                 //break; 
             }
         }
