@@ -136,20 +136,18 @@ fn find_new_entrance_point(tetrahedronVertices: array<f32, 36>, triangleID: u32)
     var currentTriangle: u32 = triangleID % 4;
 }
 
-fn find_exit_triangle(triangleID: u32, tetID: u32, O: vec3<f32>, D: vec3<f32>) -> vec4<f32>{
+fn find_exit_triangle(triangleID: u32, tetID: u32, O: vec3<f32>, D: vec3<f32>) -> u32{
     // We don't need to retest the current triangle
     var currentTriangle: u32 = triangleID % 4;
 
-    var tid: u32 = (tetID*4)+currentTriangle; // NOTE! this is just a default value, should always be overwritten
+    var triangle_ID: u32 = 0; // NOTE! this is just a default value, should always be overwritten
 
     var tetrahedronVertices: array<f32, 36> = get_tetrahedron_vertices(tetID);
 
-    for (var i: u32 = 0; i<4; i=i+1) {
+    for (var i: u32 = 0; i<36; i=i+9) {
         if (i == currentTriangle) {
             continue;
         } else {
-            tid = (tetID*4)+i;
-
             var v0:vec3<f32> = vec3<f32>(tetrahedronVertices[i], 
                                          tetrahedronVertices[i+1], 
                                          tetrahedronVertices[i+2]);
@@ -162,14 +160,14 @@ fn find_exit_triangle(triangleID: u32, tetID: u32, O: vec3<f32>, D: vec3<f32>) -
 
             // TODO: Ray can only intersect with a single triangle correct?
             if (ray_triangle_intersection_test(v0,v1,v2,O,D)) {
-                return vec4<f32>(calculate_barycentric_coords(v0,v1,v2,O,D).xyz,1.0);
-                //break; 
+                break; 
+            } else {
+                triangle_ID = triangle_ID + 1;
             }
         }
     }
 
-
-    return vec4<f32>(1.0,1.0,1.0,1.0);
+    return (tetID * 4) + triangle_ID;
 }
 
 
@@ -187,10 +185,10 @@ fn find_next_tetrahedron(triangle_id: u32) -> i32 {
 fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
 {
     // Triangle_ID
-    var t_id: u32 = fragmentInput.triangle_id;
+    var triangle_id: u32 = fragmentInput.triangle_id;
 
     // TODO: if two triangles are on each other, there is no intersection? 
-    //if (t_id != 3 || t_id != 7) {discard;}
+    //if (triangle_id != 3 || triangle_id != 7) {discard;}
 
     var O: vec3<f32> = fragmentInput.eyePosition;
 
@@ -198,21 +196,21 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     var D: vec3<f32> = normalize(fragmentInput.ray_direction);
 
     // Use the triangle_ID to obtain the normal vector for the current triangle
-    var N: vec3<f32> = vec3<f32>(normalVectors.normal[(t_id*3)], normalVectors.normal[(t_id*3) + 1], normalVectors.normal[(t_id*3) + 2]);
+    var N: vec3<f32> = vec3<f32>(normalVectors.normal[(triangle_id*3)], normalVectors.normal[(triangle_id*3) + 1], normalVectors.normal[(triangle_id*3) + 2]);
 
     // Checks if ray and plane intersect
     ray_plane_intersection_test(D, N);
     
-    // v0 is the first vertex in triangle with t_id, v0 is a point on the plane
-    var v0: vec3<f32> = vec3<f32>(tVerts.verts[(t_id * 9)], 
-                                  tVerts.verts[(t_id * 9) + 1],
-                                  tVerts.verts[(t_id * 9) + 2]);
-    var v1: vec3<f32> = vec3<f32>(tVerts.verts[(t_id * 9) + 3], 
-                                  tVerts.verts[(t_id * 9) + 4],
-                                  tVerts.verts[(t_id * 9) + 5]);
-    var v2: vec3<f32> = vec3<f32>(tVerts.verts[(t_id * 9) + 6], 
-                                  tVerts.verts[(t_id * 9) + 7],
-                                  tVerts.verts[(t_id * 9) + 8]);
+    // v0 is the first vertex in triangle with triangle_id, v0 is a point on the plane
+    var v0: vec3<f32> = vec3<f32>(tVerts.verts[(triangle_id * 9)], 
+                                  tVerts.verts[(triangle_id * 9) + 1],
+                                  tVerts.verts[(triangle_id * 9) + 2]);
+    var v1: vec3<f32> = vec3<f32>(tVerts.verts[(triangle_id * 9) + 3], 
+                                  tVerts.verts[(triangle_id * 9) + 4],
+                                  tVerts.verts[(triangle_id * 9) + 5]);
+    var v2: vec3<f32> = vec3<f32>(tVerts.verts[(triangle_id * 9) + 6], 
+                                  tVerts.verts[(triangle_id * 9) + 7],
+                                  tVerts.verts[(triangle_id * 9) + 8]);
     
     var PVM : mat4x4<f32> = transform.projection * transform.view * transform.model;
 
@@ -231,7 +229,7 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     
     // TODO: Step 1: Find Tetrahedron ID based on Triangle ID
     // The first 4 triangles are part of tetrahedron_0, second four are tetrahedron_1, etc.
-    var tetrahedron_id: u32 = u32(t_id/4);
+    var tetrahedron_id: u32 = u32(triangle_id/4);
 
     // TODO: Step 2: Get the other 3 Triangles of the tetrahedron
     var tetrahedron_size: u32 = 36;
@@ -239,24 +237,24 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     
     var intersections: u32 = 1;
     
-    //return find_exit_triangle(t_id, tetrahedron_id, O, D);
+    //return find_exit_triangle(triangle_id, tetrahedron_id, O, D);
 
      // TODO: Step 3: Test ray-triangle intersection for the 3 triangles and find new "entrance point"
-//    while (true) {
-        return find_exit_triangle(t_id, tetrahedron_id, O, D);
- 
-//        // if next tet is -1, the ray has exited the mesh and final colors can be shown
-//        var tetID: i32 = find_next_tetrahedron(t_id);
-//        if (tetID == -1) {
-//            break;
-//        } else {
-//            tetrahedron_id = u32(tetID);
-//        }
-//        intersections++;
-//    }
+    while (true) {
+        triangle_id = find_exit_triangle(triangle_id, tetrahedron_id, O, D);
+
+        // if next tet is -1, the ray has exited the mesh and final colors can be shown
+        var tetID: i32 = find_next_tetrahedron(triangle_id);
+        if (tetID == -1) {
+            break;
+        } else {
+            tetrahedron_id = u32(tetID);
+        }
+        intersections++;
+    }
  
      // TODO: Step 3.5: Count the number of intersections and show that as color on screen
  
-    //return vec4<f32>(0.25 * f32(intersections), 0.0, 0.0, 1.0);
+    return vec4<f32>(0.5 * f32(intersections), 0.0, 0.0, 1.0);
     //return vec4<f32>(barycentricCoords.xyz,1.0);
 }
