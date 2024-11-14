@@ -136,16 +136,16 @@ fn find_new_entrance_point(tetrahedronVertices: array<f32, 36>, triangleID: u32)
     var currentTriangle: u32 = triangleID % 4;
 }
 
-fn find_exit_triangle(triangleID: u32, tetID: u32, O: vec3<f32>, D: vec3<f32>) -> u32{
+fn find_exit_triangle(triangleID: u32, tetrahedron_id: u32, O: vec3<f32>, D: vec3<f32>) -> u32{
     // We don't need to retest the current triangle
     var currentTriangle: u32 = triangleID % 4;
 
     var triangle_ID: u32 = 0; // NOTE! this is just a default value, should always be overwritten
 
-    var tetrahedronVertices: array<f32, 36> = get_tetrahedron_vertices(tetID);
+    var tetrahedronVertices: array<f32, 36> = get_tetrahedron_vertices(tetrahedron_id);
 
     for (var i: u32 = 0; i<36; i=i+9) {
-        if (i == currentTriangle) {
+        if (triangle_ID == currentTriangle) {
             continue;
         } else {
             var v0:vec3<f32> = vec3<f32>(tetrahedronVertices[i], 
@@ -158,7 +158,6 @@ fn find_exit_triangle(triangleID: u32, tetID: u32, O: vec3<f32>, D: vec3<f32>) -
                                          tetrahedronVertices[i+7], 
                                          tetrahedronVertices[i+8]);
 
-            // TODO: Ray can only intersect with a single triangle correct?
             if (ray_triangle_intersection_test(v0,v1,v2,O,D)) {
                 break; 
             } else {
@@ -167,7 +166,7 @@ fn find_exit_triangle(triangleID: u32, tetID: u32, O: vec3<f32>, D: vec3<f32>) -
         }
     }
 
-    return (tetID * 4) + triangle_ID;
+    return (tetrahedron_id * 4) + triangle_ID;
 }
 
 
@@ -177,6 +176,9 @@ struct TriangleTetMap {
 @binding(4) @group(0) var<storage, read> tet: TriangleTetMap;
 
 fn find_next_tetrahedron(triangle_id: u32) -> i32 {
+    // if current: (triangle_id*2)
+    //if current == (triangle_id*2), return (triangle_id*2) + 1
+    // 
     return tet.tet_ids[(triangle_id*2) + 1];
 }
 
@@ -255,6 +257,6 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
  
      // TODO: Step 3.5: Count the number of intersections and show that as color on screen
  
-    return vec4<f32>(0.5 * f32(intersections), 0.0, 0.0, 1.0);
+    return vec4<f32>(0.25 * f32(intersections), 0.0, 0.0, 1.0);
     //return vec4<f32>(barycentricCoords.xyz,1.0);
 }
