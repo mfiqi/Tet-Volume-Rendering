@@ -257,6 +257,7 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
  
      // TODO: Step 3.5: Count the number of intersections and show that as color on screen
  
-    return vec4<f32>(0.25 * f32(intersections), 0.0, 0.0, 1.0);
+    //return vec4<f32>(0.25 * f32(intersections), 0.0, 0.0, 1.0);
     //return vec4<f32>(barycentricCoords.xyz,1.0);
+    return vec4<f32>(fragmentInput.color,1.0);
 }
