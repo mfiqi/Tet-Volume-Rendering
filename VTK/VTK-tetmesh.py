@@ -4,7 +4,7 @@ import numpy as np
 reader = vtk.vtkXMLUnstructuredGridReader()
 
 # Set the file name
-reader.SetFileName('C:\\Users\\musab\\mfiqi.github.io\\VTK\\very_small_turb.vtu')
+reader.SetFileName('C:\\Users\\musab\\mfiqi.github.io\\VTK\\xsmall_turb.vtu')
 
 # Read the file
 reader.Update()

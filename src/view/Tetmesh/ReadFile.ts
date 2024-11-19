@@ -8,15 +8,20 @@ export class ReadFile {
         TetrahedralMesh.tetIndices = new Uint32Array(0);
 
         try {
+            console.log("Before Response");
             const response = await axios.get(url);
+            console.log("After Response");
             const fileContent = response.data;
+            console.log("File Content");
     
             // Split the file content by new lines
             const lines = fileContent.split('\n');
+            console.log("Lines Split");
     
             var currentlyReading: string = "Nothing";
             
             // Process each line
+            console.log("Before Processed each line");
             for (const line of lines) {
                 if (line == "Points") 
                     currentlyReading = "Points";
@@ -32,6 +37,7 @@ export class ReadFile {
                     }
                 }
             }
+            console.log("After each line processed");
         } catch (error) {
             console.error('Error reading the file:', error);
         }
