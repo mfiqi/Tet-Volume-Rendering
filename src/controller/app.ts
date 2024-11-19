@@ -73,19 +73,19 @@ export class App {
 
         if (event.code == "KeyW") {
             //this.scene.cube.rotateX(-10);
-            this.forwards_amount = 0.01;
+            this.forwards_amount = 0.15;
         }
         if (event.code == "KeyS") {
             //this.scene.cube.rotateX(10);
-            this.forwards_amount = -0.01;
+            this.forwards_amount = -0.15;
         }
         if (event.code == "KeyA") {
             //this.scene.cube.rotateY(-10);
-            this.right_amount = -0.01;
+            this.right_amount = -0.15;
         }
         if (event.code == "KeyD") {
             //this.scene.cube.rotateY(10);
-            this.right_amount = 0.01;
+            this.right_amount = 0.15;
         }
 
         if (event.code == "KeyE") {
