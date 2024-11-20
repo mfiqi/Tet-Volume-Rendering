@@ -33,7 +33,7 @@ export class SetupRenderer {
     }
 
     async readTetMesh() {
-        const fileUrl = 'https://github.com/mfiqi/mfiqi.github.io/raw/refs/heads/Cleaning_Tetrahedral_Mesh_Code/dist/data/tetmesh.txt';
+        const fileUrl = 'https://raw.githubusercontent.com/mfiqi/mfiqi.github.io/refs/heads/Final_Branch_1/dist/data/double.txt';
 
         console.log(fileUrl);
 

@@ -4,7 +4,7 @@ import numpy as np
 reader = vtk.vtkXMLUnstructuredGridReader()
 
 # Set the file name
-reader.SetFileName('C:\\Users\\musab\\mfiqi.github.io\\VTK\\xsmall_turb.vtu')
+reader.SetFileName('C:\\Users\\musab\\mfiqi.github.io\\VTK\\xxsmall.vtu')
 
 # Read the file
 reader.Update()
@@ -126,7 +126,7 @@ print(f"Number of cells: {unstructured_grid.GetNumberOfCells()}")
 
 # Opening and Closing a file "MyFile.txt"
 # for object name file1.
-file1 = open("MyFile.txt","w")
+file1 = open("xxsmall.txt","w")
 
 file1.write("Points\n")
 

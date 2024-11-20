@@ -157,6 +157,12 @@ fn find_exit_triangle(triangleID: u32, tetrahedron_id: u32, O: vec3<f32>, D: vec
             var v2:vec3<f32> = vec3<f32>(tetrahedronVertices[i+6], 
                                          tetrahedronVertices[i+7], 
                                          tetrahedronVertices[i+8]);
+            
+            var PVM : mat4x4<f32> = transform.projection * transform.view * transform.model;
+            // Correct the vertices
+            v0 = (PVM * vec4<f32>(v0,1.0)).xyz;
+            v1 = (PVM * vec4<f32>(v1,1.0)).xyz;
+            v2 = (PVM * vec4<f32>(v2,1.0)).xyz;
 
             if (ray_triangle_intersection_test(v0,v1,v2,O,D)) {
                 break; 
@@ -189,8 +195,14 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     // Triangle_ID
     var triangle_id: u32 = fragmentInput.triangle_id;
 
-    // TODO: if two triangles are on each other, there is no intersection? 
-    //if (triangle_id != 3 || triangle_id != 7) {discard;}
+//    // TODO: if two triangles are on each other, there is no intersection? 
+//    if (triangle_id != 3 || triangle_id != 7) {discard;}
+//
+//    if (triangle_id == 3) {
+//        return vec4<f32>(1.0,0.0,0.0,1.0);
+//    } else {
+//        return vec4<f32>(1.0,0.0,1.0,1.0);
+//    }
 
     var O: vec3<f32> = fragmentInput.eyePosition;
 
@@ -233,6 +245,13 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     // The first 4 triangles are part of tetrahedron_0, second four are tetrahedron_1, etc.
     var tetrahedron_id: u32 = u32(triangle_id/4);
 
+//    if (tetrahedron_id == 0) {
+//        return vec4<f32>(1.0,0.0,0.0,1.0);
+//    } else if (tetrahedron_id == 1){
+//        return vec4<f32>(0.0,1.0,0.0,1.0);
+//    }
+//    return vec4<f32>(0.0,0.0,1.0,1.0);
+
     // TODO: Step 2: Get the other 3 Triangles of the tetrahedron
     var tetrahedron_size: u32 = 36;
     //var tetrahedronVertices: array<f32, 36> = get_tetrahedron_vertices(tetrahedron_id);
@@ -244,6 +263,12 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
      // TODO: Step 3: Test ray-triangle intersection for the 3 triangles and find new "entrance point"
     while (true) {
         triangle_id = find_exit_triangle(triangle_id, tetrahedron_id, O, D);
+
+        if (triangle_id == 3) {
+            return vec4<f32>(calculate_barycentric_coords(v0,v1,v2,O,D).xyz,1.0);
+        } else {
+            discard;
+        }
 
         // if next tet is -1, the ray has exited the mesh and final colors can be shown
         var tetID: i32 = find_next_tetrahedron(triangle_id);
@@ -257,7 +282,7 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
  
      // TODO: Step 3.5: Count the number of intersections and show that as color on screen
  
-    //return vec4<f32>(0.25 * f32(intersections), 0.0, 0.0, 1.0);
+    return vec4<f32>(0.25 * f32(intersections), 0.0, 0.0, 1.0);
     //return vec4<f32>(barycentricCoords.xyz,1.0);
-    return vec4<f32>(fragmentInput.color,1.0);
+    //return vec4<f32>(fragmentInput.color,1.0);
 }
