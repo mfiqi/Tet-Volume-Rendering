@@ -188,6 +188,24 @@ fn find_next_tetrahedron(triangle_id: u32) -> i32 {
     return tet.tet_ids[(triangle_id*2) + 1];
 }
 
+
+// The TF serves a fundamental role
+// in translating scalar and multivariate data into color and opacity to express and reveal the relevant features present in the
+// data studied. 
+fn transfer(value : f32) -> vec4<f32> {
+  // Define the isovalue range
+  let minIsovalue = 0.1;
+  let maxIsovalue = 0.8;
+
+  // Normalize the input value to the isovalue range
+  var normalizedValue = clamp((value - minIsovalue) / (maxIsovalue - minIsovalue), 0.0, 1.0);
+
+  // Simple linear transfer function
+  let color = vec4<f32>(normalizedValue, normalizedValue, normalizedValue, normalizedValue);
+
+  return color;
+}
+
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution.html
 @fragment
 fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
@@ -264,14 +282,16 @@ fn fs_main(fragmentInput: FragmentInput) -> @location(0) vec4<f32>
     while (true) {
         triangle_id = find_exit_triangle(triangle_id, tetrahedron_id, O, D);
 
-        if (triangle_id == 3) {
-            return vec4<f32>(calculate_barycentric_coords(v0,v1,v2,O,D).xyz,1.0);
-        } else {
-            discard;
-        }
+        //if (triangle_id == 3) {
+        //    return vec4<f32>(calculate_barycentric_coords(v0,v1,v2,O,D).xyz,1.0);
+        //} else {
+        //    discard;
+        //}
 
         // if next tet is -1, the ray has exited the mesh and final colors can be shown
         var tetID: i32 = find_next_tetrahedron(triangle_id);
+
+
         if (tetID == -1) {
             break;
         } else {

@@ -146,15 +146,15 @@ for i in range(unstructured_grid.GetNumberOfCells()):
     cell_points = cell.GetPointIds()
     file1.write(str([cell_points.GetId(j) for j in range(cell_points.GetNumberOfIds())])+"\n")
 
-# Get the tur_mu array
-# tur_mu_array = unstructured_grid.GetPointData().GetArray("tur_mu")
-# 
-# file1.write("tur_mu\n")
-# 
-# # Write tur_mu values to the file
-# for i in range(tur_mu_array.GetNumberOfTuples()):
-#     tur_mu_value = tur_mu_array.GetTuple1(i)
-#     file1.write(str(tur_mu_value)+"\n")
+#Get the tur_mu array
+tur_mu_array = unstructured_grid.GetPointData().GetArray("tur_mu")
+
+file1.write("tur_mu\n")
+
+# Write tur_mu values to the file
+for i in range(tur_mu_array.GetNumberOfTuples()):
+    tur_mu_value = tur_mu_array.GetTuple1(i)
+    file1.write(str(tur_mu_value)+"\n")
 
 
 file1.close()

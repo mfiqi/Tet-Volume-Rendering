@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RayTriangleIntersectionTest")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9cb8a2a9c29608bb55ae8dbddb8590dea7468dbe")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fd0e240d68f2dcef2f51815dc767ee0febff64d8")]
 [assembly: System.Reflection.AssemblyProductAttribute("RayTriangleIntersectionTest")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RayTriangleIntersectionTest")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
