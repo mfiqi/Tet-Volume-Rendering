@@ -27,12 +27,16 @@ export class ReadFile {
                     currentlyReading = "Points";
                 else if (line == "Indices") 
                     currentlyReading = "Indices";
-                else {
-                    if (line != "Points" || line != "Indices") {
+                else if (line == "tur_mu") {
+                    currentlyReading = "tur_mu";
+                } else {
+                    if (line != "Points" || line != "Indices" || line != "tur_mu") {
                         if (currentlyReading == "Points") {
                             this.addToTetVerts(line);
-                        } else {
+                        } else if (currentlyReading == "Indices") {
                             this.addToTetIndices(line);
+                        } else {
+                            this.addTo_tur_mu(line);
                         }
                     }
                 }
@@ -41,6 +45,27 @@ export class ReadFile {
         } catch (error) {
             console.error('Error reading the file:', error);
         }
+    }
+
+    static tur_mu = new Float32Array();
+
+    static addTo_tur_mu(line: any) {
+      // Convert the line parameter to a number.
+      const number = parseFloat(line); 
+    
+      // Check if the conversion was successful.
+      if (!isNaN(number)) {
+        // Create a new array with the existing data and the new number.
+        const newArray = new Float32Array(this.tur_mu.length + 1);
+        newArray.set(this.tur_mu);
+        newArray[newArray.length - 1] = number;
+    
+        // Update the static array.
+        this.tur_mu = newArray;
+      } else {
+        // Handle the case where the conversion fails.
+        console.error("Invalid input:", line);
+      }
     }
 
     
